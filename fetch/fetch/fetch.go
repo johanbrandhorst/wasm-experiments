@@ -1,10 +1,14 @@
+// +build js,wasm
+
 package fetch
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"runtime/js"
+	"syscall/js"
+	"syscall/js/callback"
 )
 
 type Method int
@@ -61,6 +65,11 @@ func Fetch(req Request) (Response, error) {
 	}
 	init.Set("headers", headers)
 
+	cb := callback.New(func(args []js.Value) {
+		fmt.Println(args)
+	})
+
 	promise := js.Global.Call("fetch", req.URL.String(), init)
+	promise.Call("then", cb)
 	return Response{}, nil
 }
