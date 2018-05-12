@@ -3,6 +3,8 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -12,15 +14,15 @@ import (
 func main() {
 	headers := http.Header{}
 	headers.Add("Content-Type", "application/json")
-	req := fetch.Request{
+	req := &fetch.Request{
 		URL: &url.URL{
 			Scheme: "http",
 			Host:   "httpbin.org",
 			Path:   "anything",
 		},
 		Method:  fetch.POST,
-		Body:    []byte(`{"key": "value"}`),
+		Body:    bytes.NewBuffer([]byte(`{"key": "value"}`)),
 		Headers: headers,
 	}
-	fetch.Fetch(req)
+	fmt.Println(fetch.Fetch(req))
 }
