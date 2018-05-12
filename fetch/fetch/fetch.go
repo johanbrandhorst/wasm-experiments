@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"syscall/js"
@@ -51,7 +52,11 @@ func Fetch(req *Request) (*Response, error) {
 		case GET, HEAD:
 			return nil, errors.New("cannot use body with GET or HEAD HTTP methods")
 		}
-		init.Set("body", req.Body)
+		b, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			return nil, err
+		}
+		init.Set("body", b)
 	}
 
 	headers := js.Global.Get("Headers").New()
@@ -67,6 +72,6 @@ func Fetch(req *Request) (*Response, error) {
 	})
 
 	promise := js.Global.Call("fetch", req.URL.String(), init)
-	promise.Call("then", cb)
+	promise.Call("then", cb.Value)
 	return &Response{}, nil
 }
