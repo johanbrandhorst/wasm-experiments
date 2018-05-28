@@ -15,11 +15,21 @@ func main() {
 	c := http.Client{
 		Transport: &fetch.Transport{},
 	}
-	resp, err := c.Post(
+	req, err := http.NewRequest(
+		"POST",
 		"https://httpbin.org/anything",
-		"application/json",
 		strings.NewReader(`{"test":"test"}`),
 	)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	/*
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*200)
+		defer cancel()
+		req = req.WithContext(ctx)
+	*/
+	resp, err := c.Do(req)
 	if err != nil {
 		fmt.Println(err)
 		return
