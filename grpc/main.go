@@ -49,7 +49,7 @@ func main() {
 			wrappedServer.ServeHTTP(resp, req)
 		} else {
 			// Serve the GopherJS client
-			folderReader(gzipped.FileServer(bundle.Assets)).ServeHTTP(resp, req)
+			wasmContentTypeSetter(folderReader(gzipped.FileServer(bundle.Assets))).ServeHTTP(resp, req)
 		}
 	}
 
@@ -73,11 +73,23 @@ func main() {
 	logger.Fatal(httpsSrv.ListenAndServeTLS("./cert.pem", "./key.pem"))
 }
 
+func wasmContentTypeSetter(fn http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		if strings.Contains(req.URL.Path, ".wasm") {
+			w.Header().Set("content-type", "application/wasm")
+		}
+		fn.ServeHTTP(w, req)
+	}
+}
+
 func folderReader(fn http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		if strings.HasSuffix(req.URL.Path, "/") {
 			// Use contents of index.html for directory, if present.
 			req.URL.Path = path.Join(req.URL.Path, "index.html")
+		}
+		if req.URL.Path == "/test.wasm" {
+			w.Header().Set("content-type", "application/wasm")
 		}
 		fn.ServeHTTP(w, req)
 	}

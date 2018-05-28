@@ -2,20 +2,11 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-(function () {
-	let args = ["js"];
-
+(() => {
 	// Map web browser API and Node.js API to a single common API (preferring web standards over Node.js API).
 	const isNodeJS = typeof process !== "undefined";
 	if (isNodeJS) {
-		if (process.argv.length < 3) {
-			process.stderr.write("usage: go_js_wasm_exec [wasm binary]\n");
-			process.exit(1);
-		}
-
-		args = args.concat(process.argv.slice(3));
 		global.require = require;
-
 		global.fs = require("fs");
 
 		const nodeCrypto = require("crypto");
@@ -40,15 +31,6 @@
 	} else {
 		window.global = window;
 
-		global.process = {
-			env: {},
-			exit(code) {
-				if (code !== 0) {
-					console.warn("exit code:", code);
-				}
-			},
-		};
-
 		let outputBuf = "";
 		global.fs = {
 			constants: {},
@@ -67,154 +49,153 @@
 	const encoder = new TextEncoder("utf-8");
 	const decoder = new TextDecoder("utf-8");
 
-	let mod, inst;
-	let values = []; // TODO: garbage collection
-	let resolveResume = function () { };
+	global.Go = class {
+		constructor() {
+			this.argv = [];
+			this.env = {};
+			this.exit = (code) => {
+				if (code !== 0) {
+					console.warn("exit code:", code);
+				}
+			};
 
-	function mem() {
-		// The buffer may change when requesting more memory.
-		return new DataView(inst.exports.mem.buffer);
-	}
+			const mem = () => {
+				// The buffer may change when requesting more memory.
+				return new DataView(this._inst.exports.mem.buffer);
+			}
 
-	function setInt64(addr, v) {
-		mem().setUint32(addr + 0, v, true);
-		if (v >= 0) {
-			mem().setUint32(addr + 4, v / 4294967296, true);
-		} else {
-			mem().setUint32(addr + 4, -1, true); // FIXME
-		}
-	}
+			const setInt64 = (addr, v) => {
+				mem().setUint32(addr + 0, v, true);
+				mem().setUint32(addr + 4, Math.floor(v / 4294967296), true);
+			}
 
-	function getInt64(addr) {
-		const low = mem().getUint32(addr + 0, true);
-		const high = mem().getInt32(addr + 4, true);
-		return low + high * 4294967296;
-	}
+			const getInt64 = (addr) => {
+				const low = mem().getUint32(addr + 0, true);
+				const high = mem().getInt32(addr + 4, true);
+				return low + high * 4294967296;
+			}
 
-	function loadValue(addr) {
-		const id = mem().getUint32(addr, true);
-		return values[id];
-	}
+			const loadValue = (addr) => {
+				const id = mem().getUint32(addr, true);
+				return this._values[id];
+			}
 
-	function storeValue(addr, v) {
-		if (v === undefined) {
-			mem().setUint32(addr, 0, true);
-			return;
-		}
-		if (v === null) {
-			mem().setUint32(addr, 1, true);
-			return;
-		}
-		values.push(v);
-		mem().setUint32(addr, values.length - 1, true);
-	}
+			const storeValue = (addr, v) => {
+				if (v === undefined) {
+					mem().setUint32(addr, 0, true);
+					return;
+				}
+				if (v === null) {
+					mem().setUint32(addr, 1, true);
+					return;
+				}
+				this._values.push(v);
+				mem().setUint32(addr, this._values.length - 1, true);
+			}
 
-	function loadSlice(addr) {
-		const array = getInt64(addr + 0);
-		const len = getInt64(addr + 8);
-		return new Uint8Array(inst.exports.mem.buffer, array, len);
-	}
+			const loadSlice = (addr) => {
+				const array = getInt64(addr + 0);
+				const len = getInt64(addr + 8);
+				return new Uint8Array(this._inst.exports.mem.buffer, array, len);
+			}
 
-	function loadSliceOfValues(addr) {
-		const array = getInt64(addr + 0);
-		const len = getInt64(addr + 8);
-		const a = new Array(len);
-		for (let i = 0; i < len; i++) {
-			const id = mem().getUint32(array + i * 4, true);
-			a[i] = values[id];
-		}
-		return a;
-	}
+			const loadSliceOfValues = (addr) => {
+				const array = getInt64(addr + 0);
+				const len = getInt64(addr + 8);
+				const a = new Array(len);
+				for (let i = 0; i < len; i++) {
+					const id = mem().getUint32(array + i * 4, true);
+					a[i] = this._values[id];
+				}
+				return a;
+			}
 
-	function loadString(addr) {
-		const saddr = getInt64(addr + 0);
-		const len = getInt64(addr + 8);
-		return decoder.decode(new DataView(inst.exports.mem.buffer, saddr, len));
-	}
+			const loadString = (addr) => {
+				const saddr = getInt64(addr + 0);
+				const len = getInt64(addr + 8);
+				return decoder.decode(new DataView(this._inst.exports.mem.buffer, saddr, len));
+			}
 
-	global.go = {
-		exited: false,
-
-		compileAndRun: async function (source) {
-			await go.compile(source);
-			await go.run();
-		},
-
-		compile: async function (source) {
-			mod = await WebAssembly.compile(source);
-		},
-
-		run: async function () {
-			let importObject = {
+			this.importObject = {
 				go: {
 					// func wasmExit(code int32)
-					"runtime.wasmExit": function (sp) {
-						go.exited = true;
-						process.exit(mem().getInt32(sp + 8, true));
+					"runtime.wasmExit": (sp) => {
+						this.exited = true;
+						this.exit(mem().getInt32(sp + 8, true));
 					},
 
 					// func wasmWrite(fd uintptr, p unsafe.Pointer, n int32)
-					"runtime.wasmWrite": function (sp) {
+					"runtime.wasmWrite": (sp) => {
 						const fd = getInt64(sp + 8);
 						const p = getInt64(sp + 16);
 						const n = mem().getInt32(sp + 24, true);
-						fs.writeSync(fd, new Uint8Array(inst.exports.mem.buffer, p, n));
+						fs.writeSync(fd, new Uint8Array(this._inst.exports.mem.buffer, p, n));
 					},
 
 					// func nanotime() int64
-					"runtime.nanotime": function (sp) {
+					"runtime.nanotime": (sp) => {
 						setInt64(sp + 8, (performance.timeOrigin + performance.now()) * 1000000);
 					},
 
 					// func walltime() (sec int64, nsec int32)
-					"runtime.walltime": function (sp) {
+					"runtime.walltime": (sp) => {
 						const msec = (new Date).getTime();
 						setInt64(sp + 8, msec / 1000);
 						mem().setInt32(sp + 16, (msec % 1000) * 1000000, true);
 					},
 
+					// func scheduleCallback(delay int64)
+					"runtime.scheduleCallback": (sp) => {
+						setTimeout(() => { this._resolveCallbackPromise(); }, getInt64(sp + 8));
+					},
+
+					// func getRandomData(r []byte)
+					"runtime.getRandomData": (sp) => {
+						crypto.getRandomValues(loadSlice(sp + 8));
+					},
+
 					// func boolVal(value bool) Value
-					"syscall/js.boolVal": function (sp) {
+					"syscall/js.boolVal": (sp) => {
 						storeValue(sp + 16, mem().getUint8(sp + 8) !== 0);
 					},
 
 					// func intVal(value int) Value
-					"syscall/js.intVal": function (sp) {
+					"syscall/js.intVal": (sp) => {
 						storeValue(sp + 16, getInt64(sp + 8));
 					},
 
 					// func floatVal(value float64) Value
-					"syscall/js.floatVal": function (sp) {
+					"syscall/js.floatVal": (sp) => {
 						storeValue(sp + 16, mem().getFloat64(sp + 8, true));
 					},
 
 					// func stringVal(value string) Value
-					"syscall/js.stringVal": function (sp) {
+					"syscall/js.stringVal": (sp) => {
 						storeValue(sp + 24, loadString(sp + 8));
 					},
 
 					// func (v Value) Get(key string) Value
-					"syscall/js.Value.Get": function (sp) {
+					"syscall/js.Value.Get": (sp) => {
 						storeValue(sp + 32, Reflect.get(loadValue(sp + 8), loadString(sp + 16)));
 					},
 
 					// func (v Value) set(key string, value Value)
-					"syscall/js.Value.set": function (sp) {
+					"syscall/js.Value.set": (sp) => {
 						Reflect.set(loadValue(sp + 8), loadString(sp + 16), loadValue(sp + 32));
 					},
 
 					// func (v Value) Index(i int) Value
-					"syscall/js.Value.Index": function (sp) {
+					"syscall/js.Value.Index": (sp) => {
 						storeValue(sp + 24, Reflect.get(loadValue(sp + 8), getInt64(sp + 16)));
 					},
 
 					// func (v Value) setIndex(i int, value Value)
-					"syscall/js.Value.setIndex": function (sp) {
+					"syscall/js.Value.setIndex": (sp) => {
 						Reflect.set(loadValue(sp + 8), getInt64(sp + 16), loadValue(sp + 24));
 					},
 
 					// func (v Value) call(name string, args []Value) (Value, bool)
-					"syscall/js.Value.call": function (sp) {
+					"syscall/js.Value.call": (sp) => {
 						try {
 							const v = loadValue(sp + 8);
 							const m = Reflect.get(v, loadString(sp + 16));
@@ -228,7 +209,7 @@
 					},
 
 					// func (v Value) invoke(args []Value) (Value, bool)
-					"syscall/js.Value.invoke": function (sp) {
+					"syscall/js.Value.invoke": (sp) => {
 						try {
 							const v = loadValue(sp + 8);
 							const args = loadSliceOfValues(sp + 16);
@@ -241,7 +222,7 @@
 					},
 
 					// func (v Value) new(args []Value) (Value, bool)
-					"syscall/js.Value.new": function (sp) {
+					"syscall/js.Value.new": (sp) => {
 						try {
 							const v = loadValue(sp + 8);
 							const args = loadSliceOfValues(sp + 16);
@@ -254,102 +235,125 @@
 					},
 
 					// func (v Value) Float() float64
-					"syscall/js.Value.Float": function (sp) {
+					"syscall/js.Value.Float": (sp) => {
 						mem().setFloat64(sp + 16, parseFloat(loadValue(sp + 8)), true);
 					},
 
 					// func (v Value) Int() int
-					"syscall/js.Value.Int": function (sp) {
+					"syscall/js.Value.Int": (sp) => {
 						setInt64(sp + 16, parseInt(loadValue(sp + 8)));
 					},
 
 					// func (v Value) Bool() bool
-					"syscall/js.Value.Bool": function (sp) {
+					"syscall/js.Value.Bool": (sp) => {
 						mem().setUint8(sp + 16, !!loadValue(sp + 8));
 					},
 
 					// func (v Value) Length() int
-					"syscall/js.Value.Length": function (sp) {
+					"syscall/js.Value.Length": (sp) => {
 						setInt64(sp + 16, parseInt(loadValue(sp + 8).length));
 					},
 
 					// func (v Value) prepareString() (Value, int)
-					"syscall/js.Value.prepareString": function (sp) {
+					"syscall/js.Value.prepareString": (sp) => {
 						const str = encoder.encode(String(loadValue(sp + 8)));
 						storeValue(sp + 16, str);
 						setInt64(sp + 24, str.length);
 					},
 
 					// func (v Value) loadString(b []byte)
-					"syscall/js.Value.loadString": function (sp) {
+					"syscall/js.Value.loadString": (sp) => {
 						const str = loadValue(sp + 8);
 						loadSlice(sp + 16).set(str);
 					},
 
-					"debug": function (value) {
+					"debug": (value) => {
 						console.log(value);
 					},
 				}
 			};
+		}
 
-			inst = await WebAssembly.instantiate(mod, importObject);
-			values = [
+		async run(instance) {
+			this._inst = instance;
+			this._values = [ // TODO: garbage collection
 				undefined,
 				null,
 				global,
-				inst.exports.mem,
-				function () { resolveResume(); },
+				this._inst.exports.mem,
+				() => {
+					if (this.exited) {
+						throw new Error("bad callback: Go program has already exited");
+					}
+					setTimeout(this._resolveCallbackPromise, 0); // make sure it is asynchronous
+				},
 			];
+			this.exited = false;
+
+			const mem = new DataView(this._inst.exports.mem.buffer)
 
 			// Pass command line arguments and environment variables to WebAssembly by writing them to the linear memory.
 			let offset = 4096;
 
 			const strPtr = (str) => {
 				let ptr = offset;
-				new Uint8Array(inst.exports.mem.buffer, offset, str.length + 1).set(encoder.encode(str + "\0"));
+				new Uint8Array(mem.buffer, offset, str.length + 1).set(encoder.encode(str + "\0"));
 				offset += str.length + (8 - (str.length % 8));
 				return ptr;
 			};
 
-			const argc = args.length;
+			const argc = this.argv.length;
 
 			const argvPtrs = [];
-			args.forEach((arg) => {
+			this.argv.forEach((arg) => {
 				argvPtrs.push(strPtr(arg));
 			});
 
-			const keys = Object.keys(process.env).sort();
+			const keys = Object.keys(this.env).sort();
 			argvPtrs.push(keys.length);
 			keys.forEach((key) => {
-				argvPtrs.push(strPtr(`${key}=${process.env[key]}`));
+				argvPtrs.push(strPtr(`${key}=${this.env[key]}`));
 			});
 
 			const argv = offset;
 			argvPtrs.forEach((ptr) => {
-				mem().setUint32(offset, ptr, true);
-				mem().setUint32(offset + 4, 0, true);
+				mem.setUint32(offset, ptr, true);
+				mem.setUint32(offset + 4, 0, true);
 				offset += 8;
 			});
 
-			try {
-				while (true) {
-					inst.exports.run(argc, argv);
-					if (go.exited) {
-						break;
-					}
-					await new Promise((resolve) => {
-						resolveResume = resolve;
-					});
+			while (true) {
+				const callbackPromise = new Promise((resolve) => {
+					this._resolveCallbackPromise = resolve;
+				});
+				this._inst.exports.run(argc, argv);
+				if (this.exited) {
+					break;
 				}
-			} catch (err) {
-				console.error(err);
-				process.exit(1);
+				await callbackPromise;
 			}
-		},
+		}
 	}
 
 	if (isNodeJS) {
-		go.compileAndRun(fs.readFileSync(process.argv[2])).catch((err) => {
+		if (process.argv.length < 3) {
+			process.stderr.write("usage: go_js_wasm_exec [wasm binary] [arguments]\n");
+			process.exit(1);
+		}
+
+		const go = new Go();
+		go.argv = process.argv.slice(2);
+		go.env = process.env;
+		go.exit = process.exit;
+		WebAssembly.instantiate(fs.readFileSync(process.argv[2]), go.importObject).then((result) => {
+			process.on("exit", () => { // Node.js exits if no callback is pending
+				if (!go.exited) {
+					console.error("error: all goroutines asleep and no JavaScript callback pending - deadlock!");
+					process.exit(1);
+				}
+			});
+			return go.run(result.instance);
+		}).catch((err) => {
 			console.error(err);
 			process.exit(1);
 		});

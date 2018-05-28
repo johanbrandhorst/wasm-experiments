@@ -7,24 +7,36 @@ license that can be found in the LICENSE file.
 <html>
 
 <head>
-  <meta charset="utf-8">
-  <title>Go wasm</title>
+	<meta charset="utf-8">
+	<title>Go wasm</title>
 </head>
 
 <body>
-  <script src="wasm_exec.js"></script>
-  <script>
-    async function loadAndCompile() {
-      let resp = await fetch("test.wasm");
-      let bytes = await resp.arrayBuffer();
-      await go.compile(bytes);
-      document.getElementById("runButton").disabled = false;
-    }
+	<script src="wasm_exec.js"></script>
+	<script>
+		if (!WebAssembly.instantiateStreaming) { // polyfill
+			WebAssembly.instantiateStreaming = async (resp, importObject) => {
+				const source = await (await resp).arrayBuffer();
+				return await WebAssembly.instantiate(source, importObject);
+			};
+		}
 
-    loadAndCompile();
-  </script>
+		const go = new Go();
+		let mod, inst;
+		WebAssembly.instantiateStreaming(fetch("test.wasm"), go.importObject).then((result) => {
+			mod = result.module;
+			inst = result.instance;
+			document.getElementById("runButton").disabled = false;
+		});
 
-  <button onClick="console.clear(); go.run();" id="runButton" disabled>Get User</button>
+		async function run() {
+			console.clear();
+			await go.run(inst);
+			inst = await WebAssembly.instantiate(mod, go.importObject); // reset instance
+		}
+	</script>
+
+	<button onClick="run();" id="runButton" disabled>Run</button>
 </body>
 
 </html>
