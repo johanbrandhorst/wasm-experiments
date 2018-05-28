@@ -35,7 +35,7 @@
   branch = "master"
   name = "github.com/johanbrandhorst/fetch"
   packages = ["."]
-  revision = "94408375f82e811ca0cd2c812adbef2c0aa52d60"
+  revision = "6a24c959938ff60f3daf26d7a7dc21e363a8470a"
 
 [[projects]]
   name = "github.com/lpar/gzipped"
@@ -157,6 +157,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4b10c16cd59cc3ee140eec982a27597b392e754644243d95edafca2ac7729333"
+  inputs-digest = "3c3a60294951567756e771a7e00b7ef536766428e1e0f076dbf2bed4df73411f"
   solver-name = "gps-cdcl"
   solver-version = 1

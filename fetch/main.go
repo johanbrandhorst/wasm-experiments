@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/johanbrandhorst/fetch"
 )
@@ -14,7 +15,11 @@ func main() {
 	c := http.Client{
 		Transport: &fetch.Transport{},
 	}
-	resp, err := c.Get("https://api.github.com")
+	resp, err := c.Post(
+		"https://httpbin.org/anything",
+		"application/json",
+		strings.NewReader(`{"test":"test"}`),
+	)
 	if err != nil {
 		fmt.Println(err)
 		return
