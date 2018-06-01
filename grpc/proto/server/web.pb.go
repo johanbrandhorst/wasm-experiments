@@ -116,8 +116,9 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// Client API for Backend service
-
+// BackendClient is the client API for Backend service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type BackendClient interface {
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error)
 }
@@ -132,15 +133,14 @@ func NewBackendClient(cc *grpc.ClientConn) BackendClient {
 
 func (c *backendClient) GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*User, error) {
 	out := new(User)
-	err := grpc.Invoke(ctx, "/web.Backend/GetUser", in, out, c.cc, opts...)
+	err := c.cc.Invoke(ctx, "/web.Backend/GetUser", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// Server API for Backend service
-
+// BackendServer is the server API for Backend service.
 type BackendServer interface {
 	GetUser(context.Context, *GetUserRequest) (*User, error)
 }

@@ -35,7 +35,7 @@
   branch = "master"
   name = "github.com/johanbrandhorst/fetch"
   packages = ["."]
-  revision = "6a24c959938ff60f3daf26d7a7dc21e363a8470a"
+  revision = "324bdf4e09d4aa48e98660403d9def0504daaaea"
 
 [[projects]]
   name = "github.com/lpar/gzipped"
@@ -120,7 +120,10 @@
 [[projects]]
   branch = "master"
   name = "google.golang.org/genproto"
-  packages = ["googleapis/rpc/status"]
+  packages = [
+    "googleapis/rpc/errdetails",
+    "googleapis/rpc/status"
+  ]
   revision = "86e600f69ee4704c6efbf6a2a40a5c10700e76c2"
 
 [[projects]]
@@ -157,6 +160,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3c3a60294951567756e771a7e00b7ef536766428e1e0f076dbf2bed4df73411f"
+  inputs-digest = "d688fec22cff0842b1870ada98bed495d65764a2c8212db1e39cf65c0d64f5b7"
   solver-name = "gps-cdcl"
   solver-version = 1

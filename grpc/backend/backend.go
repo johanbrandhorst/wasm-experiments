@@ -3,6 +3,7 @@ package backend
 import (
 	"context"
 
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -19,7 +20,19 @@ var _ server.BackendServer = (*Backend)(nil)
 
 func (b Backend) GetUser(ctx context.Context, req *server.GetUserRequest) (*server.User, error) {
 	if req.GetUserId() != "1234" {
-		return nil, status.Error(codes.InvalidArgument, "invalid id")
+		st := status.New(codes.InvalidArgument, "invalid id")
+		detSt, err := st.WithDetails(&errdetails.BadRequest{
+			FieldViolations: []*errdetails.BadRequest_FieldViolation{
+				{
+					Field:       "user",
+					Description: "That user does not exist",
+				},
+			},
+		})
+		if err == nil {
+			return nil, detSt.Err()
+		}
+		return nil, st.Err()
 	}
 	return &server.User{
 		Id: req.GetUserId(),

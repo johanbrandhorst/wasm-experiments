@@ -7,6 +7,10 @@
   name = "github.com/golang/protobuf"
 
 [[constraint]]
+  branch = "master"
+  name = "google.golang.org/genproto"
+
+[[constraint]]
   version = "1.12.0"
   name = "google.golang.org/grpc"
 
