@@ -78,15 +78,20 @@ func (*Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	success := js.NewCallback(func(args []js.Value) {
 		result := args[0]
 		header := http.Header{}
-		writeHeaders := js.NewCallback(func(args []js.Value) {
-			key, value := args[0].String(), args[1].String()
+		// https://developer.mozilla.org/en-US/docs/Web/API/Headers/entries
+		headersIt := result.Get("headers").Call("entries")
+		for {
+			n := headersIt.Call("next")
+			if n.Get("done").Bool() {
+				break
+			}
+			pair := n.Get("value")
+			key, value := pair.Index(0).String(), pair.Index(1).String()
 			ck := http.CanonicalHeaderKey(key)
 			header[ck] = append(header[ck], value)
-		})
-		defer writeHeaders.Close()
-		result.Get("headers").Call("forEach", writeHeaders)
+		}
 
-		contentLength := int64(-1)
+		contentLength := int64(0)
 		if cl, err := strconv.ParseInt(header.Get("Content-Length"), 10, 64); err == nil {
 			contentLength = cl
 		}
