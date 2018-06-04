@@ -38,6 +38,12 @@
   revision = "324bdf4e09d4aa48e98660403d9def0504daaaea"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/johanbrandhorst/grpc-wasm"
+  packages = ["."]
+  revision = "d4f5643dc71d1a17cebd3df37826b34b9d3905c5"
+
+[[projects]]
   name = "github.com/lpar/gzipped"
   packages = ["."]
   revision = "8e9a0db009a7e2ca48d46825a0b32e8b2465c810"
@@ -160,6 +166,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d688fec22cff0842b1870ada98bed495d65764a2c8212db1e39cf65c0d64f5b7"
+  inputs-digest = "b139b4b6d2de6b6210e1db3525d9b66ed479765dc05fe714d2a2f27c931794c0"
   solver-name = "gps-cdcl"
   solver-version = 1

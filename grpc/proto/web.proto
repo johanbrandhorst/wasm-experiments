@@ -8,6 +8,7 @@ option go_package = "github.com/johanbrandhorst/wasm-experiments/grpc/proto/serv
 // Backend defines the interface exposed by the backend.
 service Backend {
     rpc GetUser(GetUserRequest) returns (User) {}
+    rpc GetUsers(GetUsersRequest) returns (stream User) {}
 }
 
 message GetUserRequest {
@@ -16,4 +17,8 @@ message GetUserRequest {
 
 message User {
     string id = 1;
+}
+
+message GetUsersRequest {
+    int64 num_users = 1;
 }

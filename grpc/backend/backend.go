@@ -38,3 +38,7 @@ func (b Backend) GetUser(ctx context.Context, req *server.GetUserRequest) (*serv
 		Id: req.GetUserId(),
 	}, nil
 }
+
+func (b Backend) GetUsers(req *server.GetUsersRequest, srv server.Backend_GetUsersServer) error {
+	return nil
+}
