@@ -41,7 +41,7 @@
   branch = "master"
   name = "github.com/johanbrandhorst/grpc-wasm"
   packages = ["."]
-  revision = "d4f5643dc71d1a17cebd3df37826b34b9d3905c5"
+  revision = "2556db600caef5681127fff6b0cb5381aa977a56"
 
 [[projects]]
   name = "github.com/lpar/gzipped"

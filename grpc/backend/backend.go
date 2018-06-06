@@ -2,6 +2,8 @@ package backend
 
 import (
 	"context"
+	"strconv"
+	"time"
 
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
@@ -40,5 +42,15 @@ func (b Backend) GetUser(ctx context.Context, req *server.GetUserRequest) (*serv
 }
 
 func (b Backend) GetUsers(req *server.GetUsersRequest, srv server.Backend_GetUsersServer) error {
+	for index := 0; index < int(req.GetNumUsers()); index++ {
+		err := srv.Send(&server.User{
+			Id: strconv.Itoa(index),
+		})
+		if err != nil {
+			return err
+		}
+		time.Sleep(time.Second)
+	}
+
 	return nil
 }

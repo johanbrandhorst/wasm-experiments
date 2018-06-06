@@ -46,7 +46,16 @@ func DialContext(ctx context.Context, target string, opts ...DialOption) (conn *
 }
 
 func (cc *ClientConn) NewStream(ctx context.Context, desc *StreamDesc, method string, opts ...CallOption) (ClientStream, error) {
-	return nil, errors.New("streaming endpoints are not yet supported")
+	if desc.ClientStreams {
+		return nil, status.Error(codes.Unimplemented, "client-side streaming is not supported by grpc-web")
+	}
+
+	endpoint := cc.target + "/" + method
+	if cc.target == "" {
+		endpoint = method
+	}
+
+	return newStream(ctx, cc.client, endpoint)
 }
 
 func (cc *ClientConn) Invoke(ctx context.Context, method string, args, reply interface{}, opts ...CallOption) error {
@@ -128,6 +137,7 @@ func addHeaders(req *http.Request) {
 	// TODO: Add more headers
 	// https://github.com/grpc/grpc-go/blob/590da37e2dfb4705d8ebd9574ce4cb75295d9674/transport/http2_client.go#L356
 	req.Header.Add("content-type", "application/grpc-web+proto")
+	req.Header.Add("x-grpc-web", "1")
 	if dl, ok := req.Context().Deadline(); ok {
 		timeout := dl.Sub(time.Now())
 		req.Header.Add("grpc-timeout", encodeTimeout(timeout))

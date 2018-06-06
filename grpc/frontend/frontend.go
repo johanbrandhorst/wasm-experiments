@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 
 	_ "google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/status"
@@ -39,4 +40,27 @@ func main() {
 	} else {
 		fmt.Println(resp.GetId())
 	}
+
+	srv, err := client.GetUsers(context.Background(), &server.GetUsersRequest{
+		NumUsers: 3,
+	})
+	if err != nil {
+		st := status.Convert(err)
+		fmt.Println(st.Code(), st.Message(), st.Details())
+	} else {
+		for {
+			user, err := srv.Recv()
+			if err != nil {
+				if err != io.EOF {
+					st := status.Convert(err)
+					fmt.Println(st.Code(), st.Message(), st.Details())
+				}
+				break
+			}
+
+			fmt.Println(user.GetId())
+		}
+	}
+
+	fmt.Println("finished")
 }
