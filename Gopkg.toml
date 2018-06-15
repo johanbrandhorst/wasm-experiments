@@ -1,3 +1,8 @@
+required = [
+  "github.com/johanbrandhorst/grpc-wasm/protoc-gen-wasm",
+  "github.com/golang/protobuf/protoc-gen-go",
+]
+
 [[constraint]]
   branch = "master"
   name = "github.com/johanbrandhorst/fetch"

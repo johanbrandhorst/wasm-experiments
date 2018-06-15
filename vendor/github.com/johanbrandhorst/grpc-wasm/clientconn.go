@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
-	"github.com/johanbrandhorst/fetch"
 	spb "google.golang.org/genproto/googleapis/rpc/status"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
@@ -24,9 +23,6 @@ import (
 )
 
 type ClientConn struct {
-	// TODO(johanbrandhorst): Remove once we can rely on http.DefaultClient
-	client *http.Client
-
 	target string
 }
 
@@ -38,9 +34,6 @@ func Dial(target string, opts ...DialOption) (*ClientConn, error) {
 
 func DialContext(ctx context.Context, target string, opts ...DialOption) (conn *ClientConn, err error) {
 	return &ClientConn{
-		client: &http.Client{
-			Transport: &fetch.Transport{},
-		},
 		target: target,
 	}, nil
 }
@@ -55,7 +48,7 @@ func (cc *ClientConn) NewStream(ctx context.Context, desc *StreamDesc, method st
 		endpoint = method
 	}
 
-	return newStream(ctx, cc.client, endpoint)
+	return newStream(ctx, endpoint)
 }
 
 func (cc *ClientConn) Invoke(ctx context.Context, method string, args, reply interface{}, opts ...CallOption) error {
@@ -84,7 +77,7 @@ func (cc *ClientConn) Invoke(ctx context.Context, method string, args, reply int
 	req = req.WithContext(ctx)
 	addHeaders(req)
 
-	resp, err := cc.client.Do(req)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
 	}

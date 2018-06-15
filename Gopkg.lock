@@ -11,6 +11,12 @@
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
+    "protoc-gen-go",
+    "protoc-gen-go/descriptor",
+    "protoc-gen-go/generator",
+    "protoc-gen-go/generator/internal/remap",
+    "protoc-gen-go/grpc",
+    "protoc-gen-go/plugin",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
@@ -40,8 +46,14 @@
 [[projects]]
   branch = "master"
   name = "github.com/johanbrandhorst/grpc-wasm"
-  packages = ["."]
-  revision = "2556db600caef5681127fff6b0cb5381aa977a56"
+  packages = [
+    ".",
+    "protoc-gen-wasm",
+    "protoc-gen-wasm/generator",
+    "protoc-gen-wasm/generator/internal/remap",
+    "protoc-gen-wasm/grpc"
+  ]
+  revision = "d79a93c3901e90898a1fa38811dbeef0f4e75a41"
 
 [[projects]]
   name = "github.com/lpar/gzipped"
@@ -166,6 +178,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b139b4b6d2de6b6210e1db3525d9b66ed479765dc05fe714d2a2f27c931794c0"
+  inputs-digest = "32259474a7120b027d79b02dc0b1f1f13673342b660d3f55bcc442b6499ee37c"
   solver-name = "gps-cdcl"
   solver-version = 1

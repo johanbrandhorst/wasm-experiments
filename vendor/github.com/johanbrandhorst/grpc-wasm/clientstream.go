@@ -60,17 +60,15 @@ type ServiceDesc struct {
 }
 
 type clientStream struct {
-	ctx    context.Context
-	req    *http.Request
-	client *http.Client
-	errCh  chan error
-	msgCh  chan []byte
+	ctx   context.Context
+	req   *http.Request
+	errCh chan error
+	msgCh chan []byte
 }
 
-func newStream(ctx context.Context, client *http.Client, endpoint string) (*clientStream, error) {
+func newStream(ctx context.Context, endpoint string) (*clientStream, error) {
 	cs := &clientStream{
-		ctx:    ctx,
-		client: client,
+		ctx: ctx,
 	}
 
 	req, err := http.NewRequest(
@@ -127,7 +125,7 @@ func (c *clientStream) SendMsg(req interface{}) error {
 	c.req.Body = ioutil.NopCloser(bytes.NewBuffer(append(bufHeader, msg...)))
 	addHeaders(c.req)
 
-	resp, err := c.client.Do(c.req)
+	resp, err := http.DefaultClient.Do(c.req)
 	if err != nil {
 		return status.Error(codes.Unavailable, err.Error())
 	}
