@@ -28,6 +28,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/http2"
@@ -45,12 +46,6 @@ const (
 	// http2IOBufSize specifies the buffer size for sending frames.
 	defaultWriteBufSize = 32 * 1024
 	defaultReadBufSize  = 32 * 1024
-	// baseContentType is the base content-type for gRPC.  This is a valid
-	// content-type on it's own, but can also include a content-subtype such as
-	// "proto" as a suffix after "+" or ";".  See
-	// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md#requests
-	// for more details.
-	baseContentType = "application/grpc"
 )
 
 var (
@@ -156,38 +151,6 @@ func isWhitelistedHeader(hdr string) bool {
 	}
 }
 
-// contentSubtype returns the content-subtype for the given content-type.  The
-// given content-type must be a valid content-type that starts with
-// "application/grpc". A content-subtype will follow "application/grpc" after a
-// "+" or ";". See
-// https://github.com/grpc/grpc/blob/master/doc/PROTOCOL-HTTP2.md#requests for
-// more details.
-//
-// If contentType is not a valid content-type for gRPC, the boolean
-// will be false, otherwise true. If content-type == "application/grpc",
-// "application/grpc+", or "application/grpc;", the boolean will be true,
-// but no content-subtype will be returned.
-//
-// contentType is assumed to be lowercase already.
-func contentSubtype(contentType string) (string, bool) {
-	if contentType == baseContentType {
-		return "", true
-	}
-	if !strings.HasPrefix(contentType, baseContentType) {
-		return "", false
-	}
-	// guaranteed since != baseContentType and has baseContentType prefix
-	switch contentType[len(baseContentType)] {
-	case '+', ';':
-		// this will return true for "application/grpc+" or "application/grpc;"
-		// which the previous validContentType function tested to be valid, so we
-		// just say that no content-subtype is specified in this case
-		return contentType[len(baseContentType)+1:], true
-	default:
-		return "", false
-	}
-}
-
 // contentSubtype is assumed to be lowercase
 func contentType(contentSubtype string) string {
 	if contentSubtype == "" {
@@ -233,13 +196,7 @@ func decodeMetadataHeader(k, v string) (string, error) {
 	return v, nil
 }
 
-func (d *decodeState) decodeResponseHeader(frame *http2.MetaHeadersFrame) error {
-	for _, hf := range frame.Fields {
-		if err := d.processHeaderField(hf); err != nil {
-			return err
-		}
-	}
-
+func (d *decodeState) validate() error {
 	// If grpc status exists, no need to check further.
 	if d.rawStatusCode != nil || d.statusGen != nil {
 		return nil
@@ -437,16 +394,17 @@ func decodeTimeout(s string) (time.Duration, error) {
 
 const (
 	spaceByte   = ' '
-	tildaByte   = '~'
+	tildeByte   = '~'
 	percentByte = '%'
 )
 
 // encodeGrpcMessage is used to encode status code in header field
-// "grpc-message".
-// It checks to see if each individual byte in msg is an
-// allowable byte, and then either percent encoding or passing it through.
-// When percent encoding, the byte is converted into hexadecimal notation
-// with a '%' prepended.
+// "grpc-message". It does percent encoding and also replaces invalid utf-8
+// characters with Unicode replacement character.
+//
+// It checks to see if each individual byte in msg is an allowable byte, and
+// then either percent encoding or passing it through. When percent encoding,
+// the byte is converted into hexadecimal notation with a '%' prepended.
 func encodeGrpcMessage(msg string) string {
 	if msg == "" {
 		return ""
@@ -454,7 +412,7 @@ func encodeGrpcMessage(msg string) string {
 	lenMsg := len(msg)
 	for i := 0; i < lenMsg; i++ {
 		c := msg[i]
-		if !(c >= spaceByte && c < tildaByte && c != percentByte) {
+		if !(c >= spaceByte && c <= tildeByte && c != percentByte) {
 			return encodeGrpcMessageUnchecked(msg)
 		}
 	}
@@ -463,14 +421,26 @@ func encodeGrpcMessage(msg string) string {
 
 func encodeGrpcMessageUnchecked(msg string) string {
 	var buf bytes.Buffer
-	lenMsg := len(msg)
-	for i := 0; i < lenMsg; i++ {
-		c := msg[i]
-		if c >= spaceByte && c < tildaByte && c != percentByte {
-			buf.WriteByte(c)
-		} else {
-			buf.WriteString(fmt.Sprintf("%%%02X", c))
+	for len(msg) > 0 {
+		r, size := utf8.DecodeRuneInString(msg)
+		for _, b := range []byte(string(r)) {
+			if size > 1 {
+				// If size > 1, r is not ascii. Always do percent encoding.
+				buf.WriteString(fmt.Sprintf("%%%02X", b))
+				continue
+			}
+
+			// The for loop is necessary even if size == 1. r could be
+			// utf8.RuneError.
+			//
+			// fmt.Sprintf("%%%02X", utf8.RuneError) gives "%FFFD".
+			if b >= spaceByte && b <= tildeByte && b != percentByte {
+				buf.WriteByte(b)
+			} else {
+				buf.WriteString(fmt.Sprintf("%%%02X", b))
+			}
 		}
+		msg = msg[size:]
 	}
 	return buf.String()
 }
@@ -531,10 +501,14 @@ func (w *bufWriter) Write(b []byte) (n int, err error) {
 	if w.err != nil {
 		return 0, w.err
 	}
-	n = copy(w.buf[w.offset:], b)
-	w.offset += n
-	if w.offset >= w.batchSize {
-		err = w.Flush()
+	for len(b) > 0 {
+		nn := copy(w.buf[w.offset:], b)
+		b = b[nn:]
+		w.offset += nn
+		n += nn
+		if w.offset >= w.batchSize {
+			err = w.Flush()
+		}
 	}
 	return n, err
 }

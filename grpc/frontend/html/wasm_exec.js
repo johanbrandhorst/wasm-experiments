@@ -41,6 +41,11 @@
 				}
 				return buf.length;
 			},
+			openSync(path, flags, mode) {
+				const err = new Error("not implemented");
+				err.code = "ENOSYS";
+				throw err;
+			},
 		};
 	}
 
@@ -369,6 +374,7 @@
 			return go.run(result.instance);
 		}).catch((err) => {
 			console.error(err);
+			go.exited = true;
 			process.exit(1);
 		});
 	}

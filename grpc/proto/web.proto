@@ -3,7 +3,7 @@ syntax = "proto3";
 // Web exposes a backend server over gRPC.
 package web;
 
-option go_package = "github.com/johanbrandhorst/wasm-experiments/grpc/proto/server";
+option go_package = "github.com/johanbrandhorst/wasm-experiments/grpc/proto;web";
 
 // Backend defines the interface exposed by the backend.
 service Backend {

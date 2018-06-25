@@ -19,7 +19,7 @@ import (
 
 	"github.com/johanbrandhorst/wasm-experiments/grpc/backend"
 	"github.com/johanbrandhorst/wasm-experiments/grpc/frontend/bundle"
-	"github.com/johanbrandhorst/wasm-experiments/grpc/proto/server"
+	web "github.com/johanbrandhorst/wasm-experiments/grpc/proto"
 )
 
 var logger *logrus.Logger
@@ -39,7 +39,7 @@ func init() {
 
 func main() {
 	gs := grpc.NewServer()
-	server.RegisterBackendServer(gs, &backend.Backend{})
+	web.RegisterBackendServer(gs, &backend.Backend{})
 	wrappedServer := grpcweb.WrapServer(gs, grpcweb.WithWebsockets(true))
 
 	handler := func(resp http.ResponseWriter, req *http.Request) {

@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/http"
 	"sync"
 	"sync/atomic"
 
@@ -185,13 +186,20 @@ type Stream struct {
 
 	headerChan chan struct{} // closed to indicate the end of header metadata.
 	headerDone uint32        // set when headerChan is closed. Used to avoid closing headerChan multiple times.
-	header     metadata.MD   // the received header metadata.
-	trailer    metadata.MD   // the key-value map of trailer metadata.
 
-	headerOk bool // becomes true from the first header is about to send
-	state    streamState
+	// hdrMu protects header and trailer metadata on the server-side.
+	hdrMu   sync.Mutex
+	header  metadata.MD // the received header metadata.
+	trailer metadata.MD // the key-value map of trailer metadata.
 
-	status *status.Status // the status error received from the server
+	// On the server-side, headerSent is atomically set to 1 when the headers are sent out.
+	headerSent uint32
+
+	state streamState
+
+	// On client-side it is the status error received from the server.
+	// On server-side it is unused.
+	status *status.Status
 
 	bytesReceived uint32 // indicates whether any bytes have been received on this stream
 	unprocessed   uint32 // set if the server sends a refused stream or GOAWAY including this stream
@@ -199,6 +207,24 @@ type Stream struct {
 	// contentSubtype is the content-subtype for requests.
 	// this must be lowercase or the behavior is undefined.
 	contentSubtype string
+
+	// only used by WASM clients
+	req         *http.Request
+	requestSent uint32 // indicates that the request has been sent
+	body        io.ReadCloser
+	writeErr    error
+	respChan    chan struct{} // closed to indicate the body or writeErr has been set.
+}
+
+// isHeaderSent is only valid on the server-side.
+func (s *Stream) isHeaderSent() bool {
+	return atomic.LoadUint32(&s.headerSent) == 1
+}
+
+// updateHeaderSent updates headerSent and returns true
+// if it was alreay set. It is valid only on server-side.
+func (s *Stream) updateHeaderSent() bool {
+	return atomic.SwapUint32(&s.headerSent, 1) == 1
 }
 
 func (s *Stream) swapState(st streamState) streamState {
@@ -313,10 +339,12 @@ func (s *Stream) SetHeader(md metadata.MD) error {
 	if md.Len() == 0 {
 		return nil
 	}
-	if s.headerOk || atomic.LoadUint32((*uint32)(&s.state)) == uint32(streamDone) {
+	if s.isHeaderSent() || s.getState() == streamDone {
 		return ErrIllegalHeaderWrite
 	}
+	s.hdrMu.Lock()
 	s.header = metadata.Join(s.header, md)
+	s.hdrMu.Unlock()
 	return nil
 }
 
@@ -335,22 +363,17 @@ func (s *Stream) SetTrailer(md metadata.MD) error {
 	if md.Len() == 0 {
 		return nil
 	}
+	if s.getState() == streamDone {
+		return ErrIllegalHeaderWrite
+	}
+	s.hdrMu.Lock()
 	s.trailer = metadata.Join(s.trailer, md)
+	s.hdrMu.Unlock()
 	return nil
 }
 
 func (s *Stream) write(m recvMsg) {
 	s.buf.put(m)
-}
-
-// Read reads all p bytes from the wire for this stream.
-func (s *Stream) Read(p []byte) (n int, err error) {
-	// Don't request a read if there was an error earlier
-	if er := s.trReader.(*transportReader).er; er != nil {
-		return 0, er
-	}
-	s.requestRead(len(p))
-	return io.ReadFull(s.trReader, p)
 }
 
 // tranportReader reads all the data available for this Stream from the transport and
