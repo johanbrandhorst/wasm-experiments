@@ -16,7 +16,7 @@ import (
 
 // Build with Go WASM fork
 //go:generate rm -f ./html/test.wasm
-//go:generate bash -c "GOOS=js GOARCH=wasm GOROOT=$GOPATH/src/github.com/johanbrandhorst/go/ $GOPATH/src/github.com/johanbrandhorst/go/bin/go build -o ./html/test.wasm frontend.go"
+//go:generate bash -c "GOOS=js GOARCH=wasm go1.11beta1 build -o ./html/test.wasm frontend.go"
 
 // Integrate generated JS into a Go file for static loading.
 //go:generate bash -c "go run assets_generate.go"
