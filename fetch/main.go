@@ -3,42 +3,37 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 
-	"github.com/johanbrandhorst/fetch"
+	"github.com/dennwc/dom"
+	"github.com/johanbrandhorst/wasm-experiments/div"
 )
 
 func main() {
-	c := http.Client{
-		Transport: &fetch.Transport{},
-	}
+	t := dom.GetDocument().GetElementById("target")
+	logger := log.New((*div.Writer)(t), "", log.LstdFlags)
+
+	c := http.Client{}
 	req, err := http.NewRequest(
 		"POST",
 		"https://httpbin.org/anything",
 		strings.NewReader(`{"test":"test"}`),
 	)
 	if err != nil {
-		fmt.Println(err)
-		return
+		logger.Fatal(err)
 	}
-	/*
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*200)
-		defer cancel()
-		req = req.WithContext(ctx)
-	*/
+
 	resp, err := c.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return
+		logger.Fatal(err)
 	}
 	defer resp.Body.Close()
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
-		return
+		logger.Fatal(err)
 	}
-	fmt.Println(string(b))
+	logger.Print(string(b))
 }

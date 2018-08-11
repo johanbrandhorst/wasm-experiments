@@ -2,184 +2,20 @@
 
 
 [[projects]]
-  branch = "master"
-  name = "github.com/golang/gddo"
-  packages = ["httputil/header"]
-  revision = "416d5fc8c9c85e9ec9252a70d01e069f4b287ff0"
-
-[[projects]]
-  name = "github.com/golang/protobuf"
-  packages = [
-    "proto",
-    "protoc-gen-go",
-    "protoc-gen-go/descriptor",
-    "protoc-gen-go/generator",
-    "protoc-gen-go/generator/internal/remap",
-    "protoc-gen-go/grpc",
-    "protoc-gen-go/plugin",
-    "ptypes",
-    "ptypes/any",
-    "ptypes/duration",
-    "ptypes/timestamp"
-  ]
-  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
-  version = "v1.1.0"
-
-[[projects]]
-  name = "github.com/gorilla/websocket"
-  packages = ["."]
-  revision = "ea4d1f681babbce9545c9c5f3d5194a789c89f5b"
-  version = "v1.2.0"
-
-[[projects]]
-  branch = "set-content-type-in-response"
-  name = "github.com/improbable-eng/grpc-web"
-  packages = ["go/grpcweb"]
-  revision = "4883019eae31cf9b891633279c6a92d0597ea920"
-  source = "github.com/johanbrandhorst/grpc-web"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/johanbrandhorst/fetch"
-  packages = ["."]
-  revision = "324bdf4e09d4aa48e98660403d9def0504daaaea"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/johanbrandhorst/grpc-wasm"
-  packages = [
-    "protoc-gen-wasm",
-    "protoc-gen-wasm/generator",
-    "protoc-gen-wasm/generator/internal/remap",
-    "protoc-gen-wasm/grpc"
-  ]
-  revision = "d79a93c3901e90898a1fa38811dbeef0f4e75a41"
-
-[[projects]]
-  name = "github.com/lpar/gzipped"
-  packages = ["."]
-  revision = "8e9a0db009a7e2ca48d46825a0b32e8b2465c810"
-  version = "v1.0.1"
-
-[[projects]]
-  name = "github.com/rs/cors"
-  packages = ["."]
-  revision = "feef513b9575b32f84bafa580aad89b011259019"
-  version = "v1.3.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/shurcooL/httpfs"
-  packages = ["vfsutil"]
-  revision = "809beceb23714880abc4a382a00c05f89d13b1cc"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/shurcooL/vfsgen"
-  packages = ["."]
-  revision = "bded413e56ef86004fb6a11dd9d1bb9dc118ed03"
-
-[[projects]]
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
-  revision = "94e3fad7f1b4eed4ec147751ad6b4c4d33f00611"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/net"
-  packages = [
-    "context",
-    "http/httpguts",
-    "http2",
-    "http2/hpack",
-    "idna",
-    "internal/timeseries",
-    "trace"
-  ]
-  revision = "2491c5de3490fced2f6cff376127c667efeed857"
-
-[[projects]]
-  branch = "master"
-  name = "golang.org/x/sys"
-  packages = [
-    "unix",
-    "windows"
-  ]
-  revision = "d0faeb539838e250bd0a9db4182d48d4a1915181"
-
-[[projects]]
-  name = "golang.org/x/text"
-  packages = [
-    "collate",
-    "collate/build",
-    "internal/colltab",
-    "internal/gen",
-    "internal/tag",
-    "internal/triegen",
-    "internal/ucd",
-    "language",
-    "secure/bidirule",
-    "transform",
-    "unicode/bidi",
-    "unicode/cldr",
-    "unicode/norm",
-    "unicode/rangetable"
-  ]
-  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
-  version = "v0.3.0"
-
-[[projects]]
-  branch = "master"
-  name = "google.golang.org/genproto"
-  packages = [
-    "googleapis/rpc/errdetails",
-    "googleapis/rpc/status"
-  ]
-  revision = "86e600f69ee4704c6efbf6a2a40a5c10700e76c2"
-
-[[projects]]
-  branch = "add-grpc-web-client"
-  name = "google.golang.org/grpc"
+  branch = "patch-1"
+  digest = "1:4a2cfc3902d8d9b797c6c47d4d0d957f16fc65f0339fa79dcbe2bf5369e6ce81"
+  name = "github.com/dennwc/dom"
   packages = [
     ".",
-    "balancer",
-    "balancer/base",
-    "balancer/roundrobin",
-    "codes",
-    "connectivity",
-    "credentials",
-    "encoding",
-    "encoding/proto",
-    "grpclog",
-    "internal",
-    "internal/backoff",
-    "internal/channelz",
-    "internal/grpcrand",
-    "keepalive",
-    "metadata",
-    "naming",
-    "peer",
-    "resolver",
-    "resolver/dns",
-    "resolver/passthrough",
-    "stats",
-    "status",
-    "tap",
-    "transport"
+    "js",
   ]
-  revision = "43e0a181510c90bb1c9a9a3d73f33df55bd21295"
-  source = "github.com/johanbrandhorst/grpc-go"
+  pruneopts = "UT"
+  revision = "b54802b1c1ffddfa0bf414cd34c129a0725a4e29"
+  source = "github.com/johanbrandhorst/dom"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "efb2981e5b7917b202cb0cfb3d8782af1275313b68c739acabf2ccd70258fd97"
+  input-imports = ["github.com/dennwc/dom"]
   solver-name = "gps-cdcl"
   solver-version = 1
