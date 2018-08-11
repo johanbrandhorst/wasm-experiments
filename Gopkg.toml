@@ -1,31 +1,8 @@
-required = [
-  "github.com/johanbrandhorst/grpc-wasm/protoc-gen-wasm",
-  "github.com/golang/protobuf/protoc-gen-go",
-]
-
-[[constraint]]
-  version = "1.1.0"
-  name = "github.com/golang/protobuf"
-
-[[constraint]]
-  branch = "master"
-  name = "google.golang.org/genproto"
-
-[[constraint]]
-  branch = "add-grpc-web-client"
-  name = "google.golang.org/grpc"
-  source = "github.com/johanbrandhorst/grpc-go"
-
-[[override]]
-  branch = "add-grpc-web-client"
-  name = "google.golang.org/grpc"
-  source = "github.com/johanbrandhorst/grpc-go"
-
-[[constraint]]
-  branch = "set-content-type-in-response"
-  name = "github.com/improbable-eng/grpc-web"
-  source = "github.com/johanbrandhorst/grpc-web"
-
 [prune]
   go-tests = true
   unused-packages = true
+
+[[constraint]]
+  source = "github.com/johanbrandhorst/dom"
+  branch = "patch-1"
+  name = "github.com/dennwc/dom"
