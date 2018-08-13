@@ -3,6 +3,5 @@
   unused-packages = true
 
 [[constraint]]
-  source = "github.com/johanbrandhorst/dom"
-  branch = "patch-1"
+  branch = "master"
   name = "github.com/dennwc/dom"

@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  branch = "patch-1"
+  branch = "master"
   digest = "1:4a2cfc3902d8d9b797c6c47d4d0d957f16fc65f0339fa79dcbe2bf5369e6ce81"
   name = "github.com/dennwc/dom"
   packages = [
@@ -10,8 +10,7 @@
     "js",
   ]
   pruneopts = "UT"
-  revision = "b54802b1c1ffddfa0bf414cd34c129a0725a4e29"
-  source = "github.com/johanbrandhorst/dom"
+  revision = "42c0f3b773203d4ea24045cc84f6ed3a25da1af1"
 
 [solve-meta]
   analyzer-name = "dep"
