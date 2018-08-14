@@ -9,12 +9,21 @@ import (
 	"strings"
 
 	"github.com/dennwc/dom"
-	"github.com/johanbrandhorst/wasm-experiments/div"
 )
+
+type writer dom.Element
+
+// Write implements io.Writer.
+func (d writer) Write(p []byte) (n int, err error) {
+	node := dom.GetDocument().CreateElement("div")
+	node.SetInnerHTML(string(p))
+	(*dom.Element)(&d).AppendChild(node)
+	return len(p), nil
+}
 
 func main() {
 	t := dom.GetDocument().GetElementById("target")
-	logger := log.New((*div.Writer)(t), "", log.LstdFlags)
+	logger := log.New((*writer)(t), "", log.LstdFlags)
 
 	c := http.Client{}
 	req, err := http.NewRequest(

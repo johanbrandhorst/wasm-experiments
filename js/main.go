@@ -2,9 +2,7 @@
 
 package main
 
-import (
-	"syscall/js"
-)
+import "syscall/js"
 
 var document js.Value
 
