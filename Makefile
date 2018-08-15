@@ -28,5 +28,9 @@ fetch:
 	cp $$(go1.11rc1 env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
 	sed -i -e 's;</button>;</button>\n\t<div id=\"target\"></div>;' ./html/index.html
 
+.PHONY: jsgo
+jsgo:
+	wasmgo -c=go1.11rc1 deploy github.com/johanbrandhorst/wasm-experiments/jsgo
+
 serve:
 	go run main.go
