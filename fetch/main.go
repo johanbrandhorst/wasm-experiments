@@ -16,7 +16,7 @@ type writer dom.Element
 // Write implements io.Writer.
 func (d writer) Write(p []byte) (n int, err error) {
 	node := dom.GetDocument().CreateElement("div")
-	node.SetInnerHTML(string(p))
+	node.SetTextContent(string(p))
 	(*dom.Element)(&d).AppendChild(node)
 	return len(p), nil
 }

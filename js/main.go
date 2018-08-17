@@ -14,7 +14,7 @@ func main() {
 	div := document.Call("getElementById", "target")
 
 	node := document.Call("createElement", "div")
-	node.Set("innerHTML", "Hello World")
+	node.Set("innerText", "Hello World")
 
 	div.Call("appendChild", node)
 }
