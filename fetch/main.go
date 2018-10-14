@@ -7,23 +7,28 @@ import (
 	"log"
 	"net/http"
 	"strings"
-
-	"github.com/dennwc/dom"
+	"syscall/js"
 )
 
-type writer dom.Element
+var document js.Value
+
+func init() {
+	document = js.Global().Get("document")
+}
+
+type writer js.Value
 
 // Write implements io.Writer.
 func (d writer) Write(p []byte) (n int, err error) {
-	node := dom.GetDocument().CreateElement("div")
-	node.SetTextContent(string(p))
-	(*dom.Element)(&d).AppendChild(node)
+	node := document.Call("createElement", "div")
+	node.Set("textContent", string(p))
+	js.Value(d).Call("appendChild", node)
 	return len(p), nil
 }
 
 func main() {
-	t := dom.GetDocument().GetElementById("target")
-	logger := log.New((*writer)(t), "", log.LstdFlags)
+	t := document.Call("getElementById", "target")
+	logger := log.New((*writer)(&t), "", log.LstdFlags)
 
 	c := http.Client{}
 	req, err := http.NewRequest(
