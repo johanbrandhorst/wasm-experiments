@@ -55,17 +55,6 @@
   revision = "cd9f1b82897a926ec9df9397711bb4c6732069f7"
 
 [[projects]]
-  branch = "master"
-  digest = "1:4a2cfc3902d8d9b797c6c47d4d0d957f16fc65f0339fa79dcbe2bf5369e6ce81"
-  name = "github.com/dennwc/dom"
-  packages = [
-    ".",
-    "js",
-  ]
-  pruneopts = "UT"
-  revision = "42c0f3b773203d4ea24045cc84f6ed3a25da1af1"
-
-[[projects]]
   digest = "1:a8fc2604eb5975548b14b5bc9db87f90bf2d2b2e08ecc6be9310ec1a1d640ae0"
   name = "github.com/golang/protobuf"
   packages = [
@@ -309,9 +298,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  input-imports = [
-    "github.com/dave/wasmgo",
-    "github.com/dennwc/dom",
-  ]
+  input-imports = ["github.com/dave/wasmgo"]
   solver-name = "gps-cdcl"
   solver-version = 1
