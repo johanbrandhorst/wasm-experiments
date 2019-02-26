@@ -1,7 +1,0 @@
-required = [
-  "github.com/dave/wasmgo",
-]
-
-[prune]
-  go-tests = true
-  unused-packages = true
