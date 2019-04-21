@@ -6,10 +6,10 @@ hello: clean
 
 .PHONY: tinygo
 tinygo: clean
-	docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments --entrypoint /bin/bash tinygo/tinygo:latest -c "\
+	docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:0.5.0 /bin/bash -c "\
 		cd /go/src/github.com/johanbrandhorst/wasm-experiments && \
-		tinygo build -o ./html/test.wasm -target wasm ./$(target)/main.go && \
-		cp /go/src/github.com/tinygo-org/tinygo/targets/wasm_exec.js ./html/wasm_exec.js\
+		tinygo build -o ./html/test.wasm -target wasm --no-debug ./$(target)/main.go && \
+		cp /usr/local/tinygo/targets/wasm_exec.js ./html/wasm_exec.js\
 	"
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.html ./html/index.html
 
