@@ -38,13 +38,13 @@ serve as usual. For example:
 
 ```bash
 $ make tinygo target=hello
-rm -f ./html/*
-docker run --rm -v $(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments --entrypoint /bin/bash tinygo/tinygo:latest -c "\
+docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:0.5.0 /bin/bash -c "\
         cd /go/src/github.com/johanbrandhorst/wasm-experiments && \
-        tinygo build -o ./html/test.wasm -target wasm ./hello/main.go && \
-        cp /go/src/github.com/tinygo-org/tinygo/targets/wasm_exec.js ./html/wasm_exec.js\
+        tinygo build -o ./html/test.wasm -target wasm --no-debug ./hello/main.go && \
+        cp /usr/local/tinygo/targets/wasm_exec.js ./html/wasm_exec.js\
 "
-cp $(go env GOROOT)/misc/wasm/wasm_exec.html ./html/index.html
+cp $$(go env GOROOT)/misc/wasm/wasm_exec.html ./html/index.html
+sed -i -e 's;</button>;</button>\n\t<div id=\"target\"></div>;' ./html/index.html
 $ make serve
 go run main.go
 2019/02/24 14:33:58 Serving on http://localhost:8080
@@ -56,6 +56,7 @@ TinyGo:
 
 - `hello`
 - `channels`
+- `js`
 
 ## Experiments
 
