@@ -6,11 +6,13 @@ hello: clean
 
 .PHONY: tinygo
 tinygo: clean
-	docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:0.5.0 /bin/bash -c "\
-		cd /go/src/github.com/johanbrandhorst/wasm-experiments && \
-		tinygo build -o ./html/test.wasm -target wasm --no-debug ./$(target)/main.go && \
-		cp /usr/local/tinygo/targets/wasm_exec.js ./html/wasm_exec.js\
-	"
+	#docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:0.5.0 /bin/bash -c "\
+	#	cd /go/src/github.com/johanbrandhorst/wasm-experiments && \
+	#	tinygo build -o ./html/test.wasm -target wasm --no-debug ./$(target)/main.go && \
+	#	cp /usr/local/tinygo/targets/wasm_exec.js ./html/wasm_exec.js\
+	#"
+	tinygo build -o ./html/test.wasm -target wasm --no-debug ./$(target)/main.go
+	cp ~/go/src/github.com/tinygo-org/tinygo/targets/wasm_exec.js ./html/wasm_exec.js
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.html ./html/index.html
 	sed -i -e 's;</button>;</button>\n\t<div id=\"target\"></div>;' ./html/index.html
 
@@ -39,3 +41,7 @@ clean:
 
 serve:
 	go run main.go
+
+install-test:
+	go get github.com/agnivade/wasmbrowsertest
+	mv $$GOPATH/bin/wasmbrowsertest $$GOPATH/bin/go_js_wasm_exec
