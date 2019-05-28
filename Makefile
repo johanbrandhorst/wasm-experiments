@@ -36,6 +36,9 @@ fetch: clean
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
 	sed -i -e 's;</button>;</button>\n\t<div id=\"target\"></div>;' ./html/index.html
 
+test: clean
+	GOOS=js GOARCH=wasm go test -c -o ./html/test.wasm ./test/
+
 clean:
 	rm -f ./html/*
 
