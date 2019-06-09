@@ -4,7 +4,7 @@ Just some playing around with the experimental Go WebAssembly arch target.
 
 ## Requirements
 
-Requires `go` >= 1.11.0.
+Requires `go` >= 1.12.0.
 [TinyGo](https://github.com/tinygo-org/tinygo) examples require `docker`.
 
 ## Basic instructions
@@ -38,7 +38,7 @@ serve as usual. For example:
 
 ```bash
 $ make tinygo target=hello
-docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:0.5.0 /bin/bash -c "\
+docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:0.6.1 /bin/bash -c "\
         cd /go/src/github.com/johanbrandhorst/wasm-experiments && \
         tinygo build -o ./html/test.wasm -target wasm --no-debug ./hello/main.go && \
         cp /usr/local/tinygo/targets/wasm_exec.js ./html/wasm_exec.js\
@@ -76,4 +76,9 @@ A simple example of how to interact with the JavaScript world from WebAssembly.
 
 A more complicated example showing how to use `net/http` `DefaultClient` to
 send a HTTP request, parse the result and write it to the DOM.
+
+### Canvas
+
+An updated version of the [repulsion](https://stdiopt.github.io/gowasm-experiments/repulsion)
+demo by [Luis Figuerido](https://github.com/stdiopt) usin Go 1.12.
 
