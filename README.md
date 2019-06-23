@@ -82,6 +82,12 @@ send a HTTP request, parse the result and write it to the DOM.
 An updated version of the [repulsion](https://stdiopt.github.io/gowasm-experiments/repulsion)
 demo by [Luis Figuerido](https://github.com/stdiopt) usin Go 1.12.
 
+### TinyGo-Canvas
+
+Same as above but slightly adapted for TinyGo but avoiding the use of JS callbacks
+in Go code. Requires an experimental version of TinyGo to build. Based on work
+by [Justin Clift](https://github.com/justinclift).
+
 ### Ebiten
 
 A short demo of using the [Ebiten game engine](https://github.com/hajimehoshi/ebiten)

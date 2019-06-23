@@ -42,13 +42,17 @@ canvas: clean
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
 
 tinygo-canvas: clean
-	docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:0.6.1 /bin/bash -c "\
-			cd /go/src/github.com/johanbrandhorst/wasm-experiments && \
-			tinygo build -o ./html/test.wasm -target wasm --no-debug ./canvas/main.go && \
-			cp /usr/local/tinygo/targets/wasm_exec.js ./html/wasm_exec.js\
-	"
-	cp ./canvas/index.html ./html/index.html
-	cp ./canvas/main.go ./html/main.go
+	#docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:0.6.1 /bin/bash -c "\
+	#		cd /go/src/github.com/johanbrandhorst/wasm-experiments && \
+	#		tinygo build -o ./html/test.wasm -target wasm --no-debug ./canvas/main.go && \
+	#		cp /usr/local/tinygo/targets/wasm_exec.js ./html/wasm_exec.js\
+	#"
+	# Requires tinygo with experimental GC
+	# https://github.com/tinygo-org/tinygo/pull/350
+	tinygo build -o ./html/test.wasm -target wasm --no-debug ./tinygo-canvas/main.go
+	cp ~/go/src/github.com/tinygo-org/tinygo/targets/wasm_exec.js ./html/
+	cp ./tinygo-canvas/index.html ./html/index.html
+	cp ./tinygo-canvas/main.go ./html/main.go
 
 .PHONY: ebiten
 ebiten: clean
