@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+
+<head>
+    <script src="/wasm_exec.js"></script>
+</head>
+
+<body>
+    <div id="target">
+        <img style="position: absolute; top: 50%; left: 50%;"
+            src="https://cdnjs.cloudflare.com/ajax/libs/galleriffic/2.0.1/css/loader.gif">
+    </div>
+    <script>
+        var wasmSupported = (typeof WebAssembly === "object");
+        if (wasmSupported) {
+            if (!WebAssembly.instantiateStreaming) { // polyfill
+                WebAssembly.instantiateStreaming = async (resp, importObject) => {
+                    const source = await (await resp).arrayBuffer();
+                    return await WebAssembly.instantiate(source, importObject);
+                };
+            }
+            const go = new Go();
+            WebAssembly.instantiateStreaming(fetch("/main.wasm"), go.importObject).then((result) => {
+                go.run(result.instance);
+            });
+        } else {
+            document.getElementById("target").innerHTML = 'This application requires WebAssembly support.  Please upgrade your browser.';
+        }
+    </script>
+</body>
+
+</html>

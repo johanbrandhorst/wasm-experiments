@@ -92,3 +92,8 @@ by [Justin Clift](https://github.com/justinclift).
 
 A short demo of using the [Ebiten game engine](https://github.com/hajimehoshi/ebiten)
 to create a WebGL based flappy bird clone. Copied from the Ebiten examples.
+
+### Vugu
+
+An example of a [Vugu](https://www.vugu.org/) application reading the latest
+bitcoin price.

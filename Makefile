@@ -60,6 +60,14 @@ ebiten: clean
 	cp ./ebiten/index.html ./html/index.html
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
 
+.PHONY: vugu
+vugu: clean
+	GO111MODULE=on go get github.com/vugu/vugu/cmd/vugugen
+	vugugen --skip-go-mod --skip-main ./vugu/
+	GOOS=js GOARCH=wasm go build -o ./html/main.wasm ./vugu/
+	cp ./vugu/index.html ./html/
+	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
+
 test: clean
 	GOOS=js GOARCH=wasm go test -c -o ./html/test.wasm ./test/
 
