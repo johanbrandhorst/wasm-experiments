@@ -74,9 +74,6 @@ test: clean
 clean:
 	rm -f ./html/*
 
-serve:
-	go run main.go
-
 install-test:
 	go get github.com/agnivade/wasmbrowsertest
 	mv $$GOPATH/bin/wasmbrowsertest $$GOPATH/bin/go_js_wasm_exec
