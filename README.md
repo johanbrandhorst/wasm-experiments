@@ -22,13 +22,21 @@ rm -f ./html/*
 GOOS=js GOARCH=wasm go build -o ./html/test.wasm ./hello/main.go
 cp $(go env GOROOT)/misc/wasm/wasm_exec.html ./html/index.html
 cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
-$ make serve
-go run main.go
+$ go run main.go
 2019/02/24 14:11:51 Serving on http://localhost:8080
 ```
 
 Navigate to http://localhost:8080 to load the page. Some examples require opening
 the browser console to be seen.
+
+## Gzip compression
+
+Use the `-gzip` flag to enable on-the-fly gzip compression of the files:
+
+```bash
+$ go run main.go -gzip
+2019/02/24 14:11:51 Serving on http://localhost:8080
+```
 
 ## TinyGo targets
 
@@ -45,8 +53,7 @@ docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments t
 "
 cp $$(go env GOROOT)/misc/wasm/wasm_exec.html ./html/index.html
 sed -i -e 's;</button>;</button>\n\t<div id=\"target\"></div>;' ./html/index.html
-$ make serve
-go run main.go
+$ go run main.go
 2019/02/24 14:33:58 Serving on http://localhost:8080
 ```
 
@@ -57,6 +64,7 @@ TinyGo:
 - `hello`
 - `channels`
 - `js`
+- `tinygo-canvas`
 
 ## Experiments
 
