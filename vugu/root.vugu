@@ -60,5 +60,4 @@ func (data *RootData) HandleClick(event *vugu.DOMEvent) {
 		data.isLoading = false
 	}(event.EventEnv())
 }
-
 </script>
