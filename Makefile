@@ -70,7 +70,7 @@ vugu: clean
 
 .PHONY: vecty
 vecty: clean
-	GOOS=js GOARCH=wasm go build -o ./html/test.wasm ./vecty/main.go
+	GO111MODULE=on GOOS=js GOARCH=wasm go build -o ./html/test.wasm ./vecty/main.go
 	cp ./vecty/index.html ./html/index.html
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
 
