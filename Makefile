@@ -74,8 +74,9 @@ vecty: clean
 	cp ./vecty/index.html ./html/index.html
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
 
-test: clean
-	GOOS=js GOARCH=wasm go test -c -o ./html/test.wasm ./test/
+.PHONY: test
+test:
+	GOOS=js GOARCH=wasm go test -v ./test/
 
 clean:
 	rm -f ./html/*

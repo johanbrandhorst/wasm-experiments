@@ -20,7 +20,8 @@ type jsonResp struct {
 }
 
 func TestFetch(t *testing.T) {
-	resp, err := http.Get("https://httpbin.org/get")
+	u := "https://httpbin.org/get"
+	resp, err := http.Get(u)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,7 +37,7 @@ func TestFetch(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if r.URL != "https://httpbin.org/get" {
+	if r.URL != u {
 		t.Errorf("Unexpected request URL: %q", r.URL)
 	}
 }
