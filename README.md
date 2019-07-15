@@ -105,3 +105,8 @@ to create a WebGL based flappy bird clone. Copied from the Ebiten examples.
 
 An example of a [Vugu](https://www.vugu.org/) application reading the latest
 bitcoin price.
+
+### Vecty
+
+An example of a [Vecty](https://github.com/gopherjs/vecty) application automatically
+translating the input textbox to rendered markdown.
