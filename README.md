@@ -110,3 +110,7 @@ bitcoin price.
 
 An example of a [Vecty](https://github.com/gopherjs/vecty) application automatically
 translating the input textbox to rendered markdown.
+
+### Export
+
+An example of exporting a Go function to JavaScript.
