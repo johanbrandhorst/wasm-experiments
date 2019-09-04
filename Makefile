@@ -70,6 +70,12 @@ vecty: clean
 	cp ./vecty/index.html ./html/index.html
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
 
+.PHONY: export
+export: clean
+	GOOS=js GOARCH=wasm go build -o ./html/test.wasm ./export/main.go
+	cp ./export/index.html ./html/index.html
+	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
+
 .PHONY: test
 test:
 	GOOS=js GOARCH=wasm go test -v ./test/
