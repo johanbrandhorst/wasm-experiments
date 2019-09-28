@@ -46,7 +46,7 @@ serve as usual. For example:
 
 ```bash
 $ make tinygo target=hello
-docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:0.6.1 /bin/bash -c "\
+docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:0.8.0 /bin/bash -c "\
         cd /go/src/github.com/johanbrandhorst/wasm-experiments && \
         tinygo build -o ./html/test.wasm -target wasm --no-debug ./hello/main.go && \
         cp /usr/local/tinygo/targets/wasm_exec.js ./html/wasm_exec.js\
@@ -88,13 +88,11 @@ send a HTTP request, parse the result and write it to the DOM.
 ### Canvas
 
 An updated version of the [repulsion](https://stdiopt.github.io/gowasm-experiments/repulsion)
-demo by [Luis Figuerido](https://github.com/stdiopt) usin Go 1.12.
+demo by [Luis Figuerido](https://github.com/stdiopt).
 
 ### TinyGo-Canvas
 
-Same as above but slightly adapted for TinyGo but avoiding the use of JS callbacks
-in Go code. Requires an experimental version of TinyGo to build. Based on work
-by [Justin Clift](https://github.com/justinclift).
+Same as above but built with TinyGo.
 
 ### Ebiten
 
