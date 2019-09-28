@@ -4,7 +4,7 @@ Just some playing around with the experimental Go WebAssembly arch target.
 
 ## Requirements
 
-Requires `go` >= 1.12.0.
+Requires `go` >= 1.13.0.
 [TinyGo](https://github.com/tinygo-org/tinygo) examples require `docker`.
 
 ## Basic instructions

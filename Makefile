@@ -52,13 +52,13 @@ tinygo-canvas: clean
 
 .PHONY: ebiten
 ebiten: clean
-	GO111MODULE=on GOOS=js GOARCH=wasm go build -o ./html/ebiten.wasm ./ebiten/main.go
+	GOOS=js GOARCH=wasm go build -o ./html/ebiten.wasm ./ebiten/main.go
 	cp ./ebiten/index.html ./html/index.html
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
 
 .PHONY: vugu
 vugu: clean
-	GO111MODULE=on go get github.com/vugu/vugu/cmd/vugugen
+	go install github.com/vugu/vugu/cmd/vugugen
 	vugugen --skip-go-mod --skip-main ./vugu/
 	GOOS=js GOARCH=wasm go build -o ./html/main.wasm ./vugu/
 	cp ./vugu/index.html ./html/
@@ -66,7 +66,7 @@ vugu: clean
 
 .PHONY: vecty
 vecty: clean
-	GO111MODULE=on GOOS=js GOARCH=wasm go build -o ./html/test.wasm ./vecty/main.go
+	GOOS=js GOARCH=wasm go build -o ./html/test.wasm ./vecty/main.go
 	cp ./vecty/index.html ./html/index.html
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
 
@@ -84,5 +84,5 @@ clean:
 	rm -f ./html/*
 
 install-test:
-	go get github.com/agnivade/wasmbrowsertest
-	mv $$GOPATH/bin/wasmbrowsertest $$GOPATH/bin/go_js_wasm_exec
+	go install github.com/agnivade/wasmbrowsertest
+	mv $$(go env GOPATH)/bin/wasmbrowsertest $$(go env GOPATH)/bin/go_js_wasm_exec
