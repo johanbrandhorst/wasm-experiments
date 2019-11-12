@@ -10,7 +10,7 @@ Requires `go` >= 1.13.0.
 ## Basic instructions
 
 Choose your target from the experiments. Compile with `make <target>` and serve
-with `make serve`. This starts a local web server which serves the `./html`
+with `go run main.go`. This starts a local web server which serves the `./html`
 directory. It ensures `.wasm` files are served with their appropriate
 content-type.
 
