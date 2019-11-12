@@ -90,10 +90,6 @@ send a HTTP request, parse the result and write it to the DOM.
 An updated version of the [repulsion](https://stdiopt.github.io/gowasm-experiments/repulsion)
 demo by [Luis Figuerido](https://github.com/stdiopt).
 
-### TinyGo-Canvas
-
-Same as above but built with TinyGo.
-
 ### Ebiten
 
 A short demo of using the [Ebiten game engine](https://github.com/hajimehoshi/ebiten)
