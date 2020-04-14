@@ -22,8 +22,8 @@ github.com/gopherjs/gopherwasm v0.1.1/go.mod h1:kx4n9a+MzHH0BJJhvlsQ65hqLFXDO/m2
 github.com/gopherjs/gopherwasm v1.0.0/go.mod h1:SkZ8z7CWBz5VXbhJel8TxCmAcsQqzgWGR/8nMhyhZSI=
 github.com/gopherjs/gopherwasm v1.1.0 h1:fA2uLoctU5+T3OhOn2vYP0DVT6pxc7xhTlBB1paATqQ=
 github.com/gopherjs/gopherwasm v1.1.0/go.mod h1:SkZ8z7CWBz5VXbhJel8TxCmAcsQqzgWGR/8nMhyhZSI=
-github.com/gopherjs/vecty v0.0.0-20190701174234-2b6fc20f8913 h1:h5R2K5Wqn5av3i4xHkyVgI2qCSbpJHAqqAkKpMPh0eE=
-github.com/gopherjs/vecty v0.0.0-20190701174234-2b6fc20f8913/go.mod h1:Yd9AOfl6lN1BWnVnvaSBwKiTCAcnlIGGvdsODOOZ9RY=
+github.com/gopherjs/vecty v0.0.0-20200328200803-52636d1f7aba h1:L4sGG+I0gxUOmvEWXgkYcu+JWUmZqUM7dG/shXfCHRw=
+github.com/gopherjs/vecty v0.0.0-20200328200803-52636d1f7aba/go.mod h1:Yd9AOfl6lN1BWnVnvaSBwKiTCAcnlIGGvdsODOOZ9RY=
 github.com/hajimehoshi/bitmapfont v1.1.1 h1:H1wQ6QXA8kSp+plARsIMCTVb5iOZHq/OP3uyL5NzLuU=
 github.com/hajimehoshi/bitmapfont v1.1.1/go.mod h1:Hamfxgney7tDSmVOSDh2AWzoDH70OaC+P24zc02Gum4=
 github.com/hajimehoshi/ebiten v1.9.3 h1:YijWGMBwH2XA1ZytUQFy33UDHeCSS6d4JZKH1wq38O0=
