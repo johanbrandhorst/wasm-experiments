@@ -59,7 +59,7 @@ ebiten: clean
 .PHONY: vugu
 vugu: clean
 	go install github.com/vugu/vugu/cmd/vugugen
-	vugugen --skip-go-mod --skip-main ./vugu/
+	vugugen --skip-go-mod ./vugu/
 	GOOS=js GOARCH=wasm go build -o ./html/main.wasm ./vugu/
 	cp ./vugu/index.html ./html/
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
