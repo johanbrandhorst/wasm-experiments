@@ -1,6 +1,6 @@
 module github.com/johanbrandhorst/wasm-experiments
 
-go 1.12
+go 1.14
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
