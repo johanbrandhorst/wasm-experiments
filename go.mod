@@ -4,9 +4,7 @@ go 1.14
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
-	github.com/go-gl/glfw v0.0.0-20181213070059-819e8ce5125f // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
-	github.com/gopherjs/gopherwasm v1.1.0 // indirect
 	github.com/gopherjs/vecty v0.0.0-20200328200803-52636d1f7aba
 	github.com/hajimehoshi/ebiten v1.11.0
 	github.com/microcosm-cc/bluemonday v1.0.2
