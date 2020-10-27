@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/NYTimes/gziphandler v1.1.1
+	github.com/agnivade/wasmbrowsertest v0.3.5 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/gopherjs/vecty v0.0.0-20200328200803-52636d1f7aba
 	github.com/hajimehoshi/ebiten v1.11.0

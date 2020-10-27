@@ -77,7 +77,7 @@ export: clean
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
 
 .PHONY: test
-test:
+test: install-test
 	GOOS=js GOARCH=wasm go test -v ./test/
 
 clean:
