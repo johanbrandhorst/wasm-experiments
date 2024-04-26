@@ -90,10 +90,10 @@ send a HTTP request, parse the result and write it to the DOM.
 An updated version of the [repulsion](https://stdiopt.github.io/gowasm-experiments/repulsion)
 demo by [Luis Figuerido](https://github.com/stdiopt).
 
-### Ebiten
+### Ebitengine
 
-A short demo of using the [Ebiten game engine](https://github.com/hajimehoshi/ebiten)
-to create a WebGL based flappy bird clone. Copied from the Ebiten examples.
+A short demo of using the [Ebitengine game engine](https://github.com/hajimehoshi/ebiten)
+to create a WebGL based flappy bird clone. Copied from the Ebitengine examples.
 
 ### Vugu
 

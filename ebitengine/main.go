@@ -4,6 +4,8 @@ package main
 
 import (
 	"bytes"
+	_ "embed"
+	"flag"
 	"fmt"
 	"image"
 	"image/color"
@@ -11,23 +13,24 @@ import (
 	"log"
 	"math"
 	"math/rand"
-	"runtime"
 	"time"
 
-	"github.com/golang/freetype/truetype"
-	"golang.org/x/image/font"
-
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/audio"
-	"github.com/hajimehoshi/ebiten/audio/vorbis"
-	"github.com/hajimehoshi/ebiten/audio/wav"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
-	raudio "github.com/hajimehoshi/ebiten/examples/resources/audio"
-	"github.com/hajimehoshi/ebiten/examples/resources/fonts"
-	resources "github.com/hajimehoshi/ebiten/examples/resources/images/flappy"
-	"github.com/hajimehoshi/ebiten/inpututil"
-	"github.com/hajimehoshi/ebiten/text"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/hajimehoshi/ebiten/v2/audio/vorbis"
+	"github.com/hajimehoshi/ebiten/v2/audio/wav"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	raudio "github.com/hajimehoshi/ebiten/v2/examples/resources/audio"
+	"github.com/hajimehoshi/ebiten/v2/examples/resources/fonts"
+	resources "github.com/hajimehoshi/ebiten/v2/examples/resources/images/flappy"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
+
+var flagCRT = flag.Bool("crt", false, "enable the CRT effect")
+
+//go:embed crt.go
+var crtGo []byte
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -49,7 +52,8 @@ const (
 	screenWidth      = 640
 	screenHeight     = 480
 	tileSize         = 32
-	fontSize         = 32
+	titleFontSize    = fontSize * 1.5
+	fontSize         = 24
 	smallFontSize    = fontSize / 2
 	pipeWidth        = tileSize * 2
 	pipeStartOffsetX = 8
@@ -58,10 +62,9 @@ const (
 )
 
 var (
-	gopherImage     *ebiten.Image
-	tilesImage      *ebiten.Image
-	arcadeFont      font.Face
-	smallArcadeFont font.Face
+	gopherImage      *ebiten.Image
+	tilesImage       *ebiten.Image
+	arcadeFaceSource *text.GoTextFaceSource
 )
 
 func init() {
@@ -69,59 +72,21 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	gopherImage, _ = ebiten.NewImageFromImage(img, ebiten.FilterDefault)
+	gopherImage = ebiten.NewImageFromImage(img)
 
 	img, _, err = image.Decode(bytes.NewReader(resources.Tiles_png))
 	if err != nil {
 		log.Fatal(err)
 	}
-	tilesImage, _ = ebiten.NewImageFromImage(img, ebiten.FilterDefault)
+	tilesImage = ebiten.NewImageFromImage(img)
 }
 
 func init() {
-	tt, err := truetype.Parse(fonts.ArcadeN_ttf)
+	s, err := text.NewGoTextFaceSource(bytes.NewReader(fonts.PressStart2P_ttf))
 	if err != nil {
 		log.Fatal(err)
 	}
-	const dpi = 72
-	arcadeFont = truetype.NewFace(tt, &truetype.Options{
-		Size:    fontSize,
-		DPI:     dpi,
-		Hinting: font.HintingFull,
-	})
-	smallArcadeFont = truetype.NewFace(tt, &truetype.Options{
-		Size:    smallFontSize,
-		DPI:     dpi,
-		Hinting: font.HintingFull,
-	})
-}
-
-var (
-	audioContext *audio.Context
-	jumpPlayer   *audio.Player
-	hitPlayer    *audio.Player
-)
-
-func init() {
-	audioContext, _ = audio.NewContext(44100)
-
-	jumpD, err := vorbis.Decode(audioContext, audio.BytesReadSeekCloser(raudio.Jump_ogg))
-	if err != nil {
-		log.Fatal(err)
-	}
-	jumpPlayer, err = audio.NewPlayer(audioContext, jumpD)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	jabD, err := wav.Decode(audioContext, audio.BytesReadSeekCloser(raudio.Jab_wav))
-	if err != nil {
-		log.Fatal(err)
-	}
-	hitPlayer, err = audio.NewPlayer(audioContext, jabD)
-	if err != nil {
-		log.Fatal(err)
-	}
+	arcadeFaceSource = s
 }
 
 type Mode int
@@ -148,11 +113,21 @@ type Game struct {
 	pipeTileYs []int
 
 	gameoverCount int
+
+	touchIDs   []ebiten.TouchID
+	gamepadIDs []ebiten.GamepadID
+
+	audioContext *audio.Context
+	jumpPlayer   *audio.Player
+	hitPlayer    *audio.Player
 }
 
-func NewGame() *Game {
+func NewGame(crt bool) ebiten.Game {
 	g := &Game{}
 	g.init()
+	if crt {
+		return &GameWithCRTEffect{Game: g}
+	}
 	return g
 }
 
@@ -165,34 +140,82 @@ func (g *Game) init() {
 	for i := range g.pipeTileYs {
 		g.pipeTileYs[i] = rand.Intn(6) + 2
 	}
+
+	if g.audioContext == nil {
+		g.audioContext = audio.NewContext(48000)
+	}
+
+	jumpD, err := vorbis.DecodeWithoutResampling(bytes.NewReader(raudio.Jump_ogg))
+	if err != nil {
+		log.Fatal(err)
+	}
+	g.jumpPlayer, err = g.audioContext.NewPlayer(jumpD)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	jabD, err := wav.DecodeWithoutResampling(bytes.NewReader(raudio.Jab_wav))
+	if err != nil {
+		log.Fatal(err)
+	}
+	g.hitPlayer, err = g.audioContext.NewPlayer(jabD)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
-func jump() bool {
+func (g *Game) isKeyJustPressed() bool {
 	if inpututil.IsKeyJustPressed(ebiten.KeySpace) {
 		return true
 	}
 	if inpututil.IsMouseButtonJustPressed(ebiten.MouseButtonLeft) {
 		return true
 	}
-	if len(inpututil.JustPressedTouchIDs()) > 0 {
+	g.touchIDs = inpututil.AppendJustPressedTouchIDs(g.touchIDs[:0])
+	if len(g.touchIDs) > 0 {
 		return true
+	}
+	g.gamepadIDs = ebiten.AppendGamepadIDs(g.gamepadIDs[:0])
+	for _, g := range g.gamepadIDs {
+		if ebiten.IsStandardGamepadLayoutAvailable(g) {
+			if inpututil.IsStandardGamepadButtonJustPressed(g, ebiten.StandardGamepadButtonRightBottom) {
+				return true
+			}
+			if inpututil.IsStandardGamepadButtonJustPressed(g, ebiten.StandardGamepadButtonRightRight) {
+				return true
+			}
+		} else {
+			// The button 0/1 might not be A/B buttons.
+			if inpututil.IsGamepadButtonJustPressed(g, ebiten.GamepadButton0) {
+				return true
+			}
+			if inpututil.IsGamepadButtonJustPressed(g, ebiten.GamepadButton1) {
+				return true
+			}
+		}
 	}
 	return false
 }
 
-func (g *Game) Update(screen *ebiten.Image) error {
+func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
+	return screenWidth, screenHeight
+}
+
+func (g *Game) Update() error {
 	switch g.mode {
 	case ModeTitle:
-		if jump() {
+		if g.isKeyJustPressed() {
 			g.mode = ModeGame
 		}
 	case ModeGame:
 		g.x16 += 32
 		g.cameraX += 2
-		if jump() {
+		if g.isKeyJustPressed() {
 			g.vy16 = -96
-			jumpPlayer.Rewind()
-			jumpPlayer.Play()
+			if err := g.jumpPlayer.Rewind(); err != nil {
+				return err
+			}
+			g.jumpPlayer.Play()
 		}
 		g.y16 += g.vy16
 
@@ -203,8 +226,10 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		}
 
 		if g.hit() {
-			hitPlayer.Rewind()
-			hitPlayer.Play()
+			if err := g.hitPlayer.Rewind(); err != nil {
+				return err
+			}
+			g.hitPlayer.Play()
 			g.mode = ModeGameOver
 			g.gameoverCount = 30
 		}
@@ -212,48 +237,77 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		if g.gameoverCount > 0 {
 			g.gameoverCount--
 		}
-		if g.gameoverCount == 0 && jump() {
+		if g.gameoverCount == 0 && g.isKeyJustPressed() {
 			g.init()
 			g.mode = ModeTitle
 		}
 	}
+	return nil
+}
 
-	if ebiten.IsDrawingSkipped() {
-		return nil
-	}
-
+func (g *Game) Draw(screen *ebiten.Image) {
 	screen.Fill(color.RGBA{0x80, 0xa0, 0xc0, 0xff})
 	g.drawTiles(screen)
 	if g.mode != ModeTitle {
 		g.drawGopher(screen)
 	}
-	var texts []string
+
+	var titleTexts string
+	var texts string
 	switch g.mode {
 	case ModeTitle:
-		texts = []string{"FLAPPY GOPHER", "", "", "", "", "PRESS SPACE KEY", "", "OR TOUCH SCREEN"}
+		titleTexts = "FLAPPY GOPHER"
+		texts = "\n\n\n\n\n\nPRESS SPACE KEY\n\nOR A/B BUTTON\n\nOR TOUCH SCREEN"
 	case ModeGameOver:
-		texts = []string{"", "GAMEOVER!"}
+		texts = "\nGAME OVER!"
 	}
-	for i, l := range texts {
-		x := (screenWidth - len(l)*fontSize) / 2
-		text.Draw(screen, l, arcadeFont, x, (i+4)*fontSize, color.White)
-	}
+
+	op := &text.DrawOptions{}
+	op.GeoM.Translate(screenWidth/2, 3*titleFontSize)
+	op.ColorScale.ScaleWithColor(color.White)
+	op.LineSpacing = titleFontSize
+	op.PrimaryAlign = text.AlignCenter
+	text.Draw(screen, titleTexts, &text.GoTextFace{
+		Source: arcadeFaceSource,
+		Size:   titleFontSize,
+	}, op)
+
+	op = &text.DrawOptions{}
+	op.GeoM.Translate(screenWidth/2, 3*titleFontSize)
+	op.ColorScale.ScaleWithColor(color.White)
+	op.LineSpacing = fontSize
+	op.PrimaryAlign = text.AlignCenter
+	text.Draw(screen, texts, &text.GoTextFace{
+		Source: arcadeFaceSource,
+		Size:   fontSize,
+	}, op)
 
 	if g.mode == ModeTitle {
-		msg := []string{
-			"Go Gopher by Renee French is",
-			"licenced under CC BY 3.0.",
-		}
-		for i, l := range msg {
-			x := (screenWidth - len(l)*smallFontSize) / 2
-			text.Draw(screen, l, smallArcadeFont, x, screenHeight-4+(i-1)*smallFontSize, color.White)
-		}
+		const msg = "Go Gopher by Renee French is\nlicenced under CC BY 3.0."
+
+		op := &text.DrawOptions{}
+		op.GeoM.Translate(screenWidth/2, screenHeight-smallFontSize/2)
+		op.ColorScale.ScaleWithColor(color.White)
+		op.LineSpacing = smallFontSize
+		op.PrimaryAlign = text.AlignCenter
+		op.SecondaryAlign = text.AlignEnd
+		text.Draw(screen, msg, &text.GoTextFace{
+			Source: arcadeFaceSource,
+			Size:   smallFontSize,
+		}, op)
 	}
 
-	scoreStr := fmt.Sprintf("%04d", g.score())
-	text.Draw(screen, scoreStr, arcadeFont, screenWidth-len(scoreStr)*fontSize, fontSize, color.White)
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f", ebiten.CurrentTPS()))
-	return nil
+	op = &text.DrawOptions{}
+	op.GeoM.Translate(screenWidth, 0)
+	op.ColorScale.ScaleWithColor(color.White)
+	op.LineSpacing = fontSize
+	op.PrimaryAlign = text.AlignEnd
+	text.Draw(screen, fmt.Sprintf("%04d", g.score()), &text.GoTextFace{
+		Source: arcadeFaceSource,
+		Size:   fontSize,
+	}, op)
+
+	ebitenutil.DebugPrint(screen, fmt.Sprintf("TPS: %0.2f", ebiten.ActualTPS()))
 }
 
 func (g *Game) pipeAt(tileX int) (tileY int, ok bool) {
@@ -283,7 +337,7 @@ func (g *Game) hit() bool {
 		gopherWidth  = 30
 		gopherHeight = 60
 	)
-	w, h := gopherImage.Size()
+	w, h := gopherImage.Bounds().Dx(), gopherImage.Bounds().Dy()
 	x0 := floorDiv(g.x16, 16) + (w-gopherWidth)/2
 	y0 := floorDiv(g.y16, 16) + (h-gopherHeight)/2
 	x1 := x0 + gopherWidth
@@ -367,7 +421,7 @@ func (g *Game) drawTiles(screen *ebiten.Image) {
 
 func (g *Game) drawGopher(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
-	w, h := gopherImage.Size()
+	w, h := gopherImage.Bounds().Dx(), gopherImage.Bounds().Dy()
 	op.GeoM.Translate(-float64(w)/2.0, -float64(h)/2.0)
 	op.GeoM.Rotate(float64(g.vy16) / 96.0 * math.Pi / 6)
 	op.GeoM.Translate(float64(w)/2.0, float64(h)/2.0)
@@ -376,14 +430,34 @@ func (g *Game) drawGopher(screen *ebiten.Image) {
 	screen.DrawImage(gopherImage, op)
 }
 
-func main() {
-	g := NewGame()
-	// On browsers, let's use fullscreen so that this is playable on any browsers.
-	// It is planned to ignore the given 'scale' apply fullscreen automatically on browsers (#571).
-	if runtime.GOARCH == "js" || runtime.GOOS == "js" {
-		ebiten.SetFullscreen(true)
+type GameWithCRTEffect struct {
+	ebiten.Game
+
+	crtShader *ebiten.Shader
+}
+
+func (g *GameWithCRTEffect) DrawFinalScreen(screen ebiten.FinalScreen, offscreen *ebiten.Image, geoM ebiten.GeoM) {
+	if g.crtShader == nil {
+		s, err := ebiten.NewShader(crtGo)
+		if err != nil {
+			panic(fmt.Sprintf("flappy: failed to compiled the CRT shader: %v", err))
+		}
+		g.crtShader = s
 	}
-	if err := ebiten.Run(g.Update, screenWidth, screenHeight, 1, "Flappy Gopher (Ebiten Demo)"); err != nil {
+
+	os := offscreen.Bounds().Size()
+
+	op := &ebiten.DrawRectShaderOptions{}
+	op.Images[0] = offscreen
+	op.GeoM = geoM
+	screen.DrawRectShader(os.X, os.Y, g.crtShader, op)
+}
+
+func main() {
+	flag.Parse()
+	ebiten.SetWindowSize(screenWidth, screenHeight)
+	ebiten.SetWindowTitle("Flappy Gopher (Ebitengine Demo)")
+	if err := ebiten.RunGame(NewGame(*flagCRT)); err != nil {
 		panic(err)
 	}
 }

@@ -50,10 +50,10 @@ tinygo-canvas: clean
 	cp ./canvas/index.html ./html/index.html
 	cp ./canvas/main.go ./html/main.go
 
-.PHONY: ebiten
-ebiten: clean
-	GOOS=js GOARCH=wasm go build -o ./html/ebiten.wasm ./ebiten/main.go
-	cp ./ebiten/index.html ./html/index.html
+.PHONY: ebitengine
+ebitengine: clean
+	GOOS=js GOARCH=wasm go build -o ./html/ebitengine.wasm ./ebitengine/main.go
+	cp ./ebitengine/index.html ./html/index.html
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
 
 .PHONY: vugu
