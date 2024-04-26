@@ -6,7 +6,7 @@ hello: clean
 
 .PHONY: tinygo
 tinygo: clean
-	docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:0.8.0 /bin/bash -c "\
+	docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:latest /bin/bash -c "\
 			cd /go/src/github.com/johanbrandhorst/wasm-experiments && \
 			tinygo build -o ./html/test.wasm -target wasm --no-debug ./$(target)/main.go && \
 			cp /usr/local/tinygo/targets/wasm_exec.js ./html/wasm_exec.js\
@@ -42,7 +42,7 @@ canvas: clean
 	cp $$(go env GOROOT)/misc/wasm/wasm_exec.js ./html/wasm_exec.js
 
 tinygo-canvas: clean
-	docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:0.8.0 /bin/bash -c "\
+	docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:latest /bin/bash -c "\
 			cd /go/src/github.com/johanbrandhorst/wasm-experiments && \
 			tinygo build -o ./html/test.wasm -target wasm --no-debug ./canvas/main.go && \
 			cp /usr/local/tinygo/targets/wasm_exec.js ./html/wasm_exec.js\
@@ -58,7 +58,7 @@ ebiten: clean
 
 .PHONY: vugu
 vugu: clean
-	go install github.com/vugu/vugu/cmd/vugugen
+	go install github.com/vugu/vugu/cmd/vugugen@latest
 	vugugen --skip-go-mod ./vugu/
 	GOOS=js GOARCH=wasm go build -o ./html/main.wasm ./vugu/
 	cp ./vugu/index.html ./html/
@@ -84,5 +84,5 @@ clean:
 	rm -f ./html/*
 
 install-test:
-	go install github.com/agnivade/wasmbrowsertest
+	go install github.com/agnivade/wasmbrowsertest@latest
 	mv $$(go env GOPATH)/bin/wasmbrowsertest $$(go env GOPATH)/bin/go_js_wasm_exec

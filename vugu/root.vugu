@@ -1,9 +1,9 @@
-<div class="demo">
-    <div vg-if='c.IsLoading'>Loading...</div>
-    <div vg-if='len(c.PriceData.BPI) > 0'>
-        <div>Updated: <span vg-html='c.PriceData.Time.Updated'></span></div>
+<div class="demo-comp">
+    <div vg-if='c.isLoading'>Loading...</div>
+    <div vg-if='len(c.bpi.BPI) > 0'>
+        <div>Updated: <span vg-html='c.bpi.Time.Updated'></span></div>
         <ul>
-            <li vg-for='c.PriceData.BPI' vg-key='key'>
+            <li vg-for='c.bpi.BPI'>
                 <span vg-html='key'></span> <span vg-html='fmt.Sprint(value.Symbol, value.RateFloat)'></span>
             </li>
         </ul>
@@ -17,8 +17,8 @@ import "net/http"
 import "log"
 
 type Root struct {
-    PriceData bpi  `vugu:"data"`
-    IsLoading bool `vugu:"data"`
+    bpi bpi
+    isLoading bool
 }
 
 type bpi struct {
@@ -32,16 +32,16 @@ type bpi struct {
     } `json:"bpi"`
 }
 
-func (c *Root) HandleClick(event *vugu.DOMEvent) {
+var c Root
 
-    c.PriceData = bpi{}
+func (c *Root) HandleClick(event vugu.DOMEvent) {
 
-    ee := event.EventEnv()
+    c.bpi = bpi{}
 
-    go func() {
+    go func(ee vugu.EventEnv) {
 
         ee.Lock()
-        c.IsLoading = true
+        c.isLoading = true
         ee.UnlockRender()
         
         res, err := http.Get("https://api.coindesk.com/v1/bpi/currentprice.json")
@@ -60,10 +60,10 @@ func (c *Root) HandleClick(event *vugu.DOMEvent) {
 
         ee.Lock()
         defer ee.UnlockRender()
-        c.PriceData = newb
-        c.IsLoading = false
+        c.bpi = newb
+        c.isLoading = false
 
-    }()
+    }(event.EventEnv())
 }
 
 </script>

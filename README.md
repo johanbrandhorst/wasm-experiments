@@ -4,7 +4,7 @@ Just some playing around with the experimental Go WebAssembly arch target.
 
 ## Requirements
 
-Requires `go` >= 1.14.0.
+Requires `go` >= 1.21.0.
 [TinyGo](https://github.com/tinygo-org/tinygo) examples require `docker`.
 
 ## Basic instructions
@@ -46,7 +46,7 @@ serve as usual. For example:
 
 ```bash
 $ make tinygo target=hello
-docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:0.8.0 /bin/bash -c "\
+docker run --rm -v $$(pwd):/go/src/github.com/johanbrandhorst/wasm-experiments tinygo/tinygo:latest /bin/bash -c "\
         cd /go/src/github.com/johanbrandhorst/wasm-experiments && \
         tinygo build -o ./html/test.wasm -target wasm --no-debug ./hello/main.go && \
         cp /usr/local/tinygo/targets/wasm_exec.js ./html/wasm_exec.js\
